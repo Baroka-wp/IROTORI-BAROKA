@@ -1,14 +1,31 @@
 import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import jwt from 'jsonwebtoken';
+import { parseCookies } from '../../lib/cookies';
 
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+
+// Middleware d'authentification
+const authenticate = (req: VercelRequest): boolean => {
+  const cookies = parseCookies(req);
+  const token = cookies.token;
+  if (!token) return false;
+
+  try {
+    jwt.verify(token, JWT_SECRET);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -21,11 +38,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const post = await prisma.post.findUnique({
         where: { slug: slug as string },
       });
-      
+
       if (!post) {
         return res.status(404).json({ error: 'Post not found' });
       }
-      
+
       return res.status(200).json(post);
     } catch (error: any) {
       return res.status(500).json({ error: error.message });
@@ -33,18 +50,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'PUT') {
+    // Vérifier l'authentification
+    if (!authenticate(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
+      const { title, type, content, status, tags, description, coverImage, downloadUrl, videoUrl, playlist } = req.body;
+
+      const updateData: any = {};
+      if (title !== undefined) updateData.title = title;
+      if (type !== undefined) updateData.type = type;
+      if (content !== undefined) updateData.content = content;
+      if (status !== undefined) updateData.status = status;
+      if (tags !== undefined) updateData.tags = tags;
+      if (description !== undefined) updateData.description = description;
+      if (coverImage !== undefined) updateData.coverImage = coverImage;
+      if (downloadUrl !== undefined) updateData.downloadUrl = downloadUrl;
+      if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
+      if (playlist !== undefined) updateData.playlist = playlist;
+
       const post = await prisma.post.update({
         where: { slug: slug as string },
-        data: req.body,
+        data: updateData,
       });
       return res.status(200).json(post);
     } catch (error: any) {
+      console.error('Update error:', error);
       return res.status(400).json({ error: error.message });
     }
   }
 
   if (req.method === 'DELETE') {
+    // Vérifier l'authentification
+    if (!authenticate(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
       await prisma.post.delete({
         where: { id: slug as string },

@@ -1,14 +1,31 @@
 import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import jwt from 'jsonwebtoken';
+import { parseCookies } from '../lib/cookies';
 
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+
+// Middleware d'authentification
+const authenticate = (req: VercelRequest): boolean => {
+  const cookies = parseCookies(req);
+  const token = cookies.token;
+  if (!token) return false;
+
+  try {
+    jwt.verify(token, JWT_SECRET);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -18,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       const { type, status, playlist } = req.query;
       const where: any = {};
-      
+
       if (type) where.type = type as string;
       if (status) where.status = status as string;
       if (playlist) where.playlist = playlist as string;
@@ -35,12 +52,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
+    // Vérifier l'authentification
+    if (!authenticate(req)) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     try {
+      const { title, slug, type, content, status, tags, description, coverImage, downloadUrl, videoUrl, playlist } = req.body;
+
+      const createData: any = {
+        title,
+        slug,
+        type,
+        content,
+        status: status || 'draft',
+      };
+
+      if (tags) createData.tags = tags;
+      if (description) createData.description = description;
+      if (coverImage) createData.coverImage = coverImage;
+      if (downloadUrl) createData.downloadUrl = downloadUrl;
+      if (videoUrl) createData.videoUrl = videoUrl;
+      if (playlist) createData.playlist = playlist;
+
       const post = await prisma.post.create({
-        data: req.body,
+        data: createData,
       });
       return res.status(201).json(post);
     } catch (error: any) {
+      console.error('Create error:', error);
       return res.status(400).json({ error: error.message });
     }
   }
