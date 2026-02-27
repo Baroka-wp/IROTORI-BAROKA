@@ -556,15 +556,19 @@ const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string)
   if (post.type === 'video') {
     const getVideoEmbed = (url: string) => {
       if (!url) return null;
-      // YouTube
+      // YouTube - multiple formats
       const youtubeMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
       if (youtubeMatch) {
-        return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0`;
       }
       // Google Drive (preview)
       if (url.includes('drive.google.com')) {
         const fileId = url.split('/d/')[1]?.split('/')[0];
         if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+      // If it's already a YouTube embed URL, use it directly
+      if (url.includes('youtube.com/embed/')) {
+        return url + '?autoplay=1&rel=0';
       }
       return null;
     };
@@ -612,17 +616,20 @@ const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string)
             />
           </div>
         ) : post.videoUrl ? (
-          <a
-            href={post.videoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full aspect-video bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg flex items-center justify-center mb-8 hover:border-[#6B1A2A] transition-colors"
-          >
-            <div className="text-center">
-              <ArrowRight size={48} className="mx-auto mb-4 text-[#6B1A2A]" />
-              <p className="text-[var(--text-color)]">Voir la vidéo</p>
+          <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-8 flex items-center justify-center">
+            <div className="text-center p-8">
+              <p className="text-[var(--text-color)]/60 mb-4">Lien vidéo non supporté</p>
+              <a
+                href={post.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[#6B1A2A] hover:underline"
+              >
+                Ouvrir dans un nouvel onglet
+                <ArrowRight size={16} />
+              </a>
             </div>
-          </a>
+          </div>
         ) : null}
         {post.content && (
           <div className="prose max-w-none font-light leading-relaxed text-xl">
