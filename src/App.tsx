@@ -1133,9 +1133,14 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string
 
   useEffect(() => {
     if (slug) {
+      console.log('Fetching post:', slug);
       fetch(`/api/posts/${slug}`)
-        .then(res => res.json())
+        .then(res => {
+          console.log('Response status:', res.status);
+          return res.json();
+        })
         .then(data => {
+          console.log('Post data:', data);
           setTitle(data.title);
           setType(data.type);
           setContent(data.content);
@@ -1146,6 +1151,10 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string
           setDownloadUrl(data.downloadUrl || '');
           setVideoUrl(data.videoUrl || '');
           setPlaylist(data.playlist || '');
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error('Error fetching post:', err);
           setLoading(false);
         });
     }
