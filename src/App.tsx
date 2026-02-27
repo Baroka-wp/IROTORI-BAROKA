@@ -192,7 +192,7 @@ const Footer = () => (
     <div className="flex flex-col md:flex-row justify-between gap-8 text-[var(--text-color)]/40 text-sm font-light">
       <div>
         <p>© {new Date().getFullYear()} IROTORI BAROKA</p>
-        <p>A window into my mind.</p>
+        <p>Une fenêtre sur mon esprit.</p>
       </div>
       <div className="flex gap-6">
         <a href="#" className="hover:text-[#6B1A2A] transition-colors">RSS</a>
