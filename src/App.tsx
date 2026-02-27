@@ -11,6 +11,7 @@ import {
   LogOut,
   ChevronRight,
   ChevronDown,
+  ArrowLeft,
   Menu,
   X,
   ArrowRight,
@@ -347,6 +348,65 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
     );
   }
 
+  // Video page with playlists
+  if (type === 'video') {
+    // Group videos by playlist
+    const playlists = filteredPosts.reduce((acc, post) => {
+      const playlistName = post.playlist || 'Autres vidéos';
+      if (!acc[playlistName]) acc[playlistName] = [];
+      acc[playlistName].push(post);
+      return acc;
+    }, {} as Record<string, Post[]>);
+
+    return (
+      <div className="py-20">
+        <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
+        {Object.entries(playlists).map(([playlistName, playlistPosts]) => (
+          <div key={playlistName} className="mb-16">
+            <h2 className="text-2xl font-light text-[#6B1A2A] mb-8">{playlistName}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {playlistPosts.map((post) => (
+                <article
+                  key={post.id}
+                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
+                  onClick={() => onNavigate(`post/${post.slug}`)}
+                >
+                  {post.coverImage ? (
+                    <div className="relative">
+                      <img src={post.coverImage} alt={post.title} className="w-full h-48 object-cover" />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                          <ArrowRight size={20} className="text-[#6B1A2A] ml-1" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-48 bg-[var(--bg-color)] flex items-center justify-center">
+                      <FileText size={48} className="text-[var(--text-color)]/20" />
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <h3 className="text-base font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2 line-clamp-2">
+                      {post.title}
+                    </h3>
+                    {post.description && (
+                      <p className="text-sm text-[var(--text-color)]/60 line-clamp-2">
+                        {post.description}
+                      </p>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        ))}
+        {filteredPosts.length === 0 && (
+          <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="py-20">
       <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
@@ -368,7 +428,7 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   );
 };
 
-const PostPage = ({ slug }: { slug: string }) => {
+const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string) => void }) => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -384,10 +444,94 @@ const PostPage = ({ slug }: { slug: string }) => {
   if (loading) return <div className="py-20 text-center font-light text-[var(--text-color)]/40">Reading...</div>;
   if (!post) return <div className="py-20 text-center font-light text-[var(--text-color)]/40">Not found.</div>;
 
+  // Video page with player
+  if (post.type === 'video') {
+    const getVideoEmbed = (url: string) => {
+      if (!url) return null;
+      // YouTube
+      const youtubeMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      if (youtubeMatch) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+      }
+      // Google Drive (preview)
+      if (url.includes('drive.google.com')) {
+        const fileId = url.split('/d/')[1]?.split('/')[0];
+        if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
+      }
+      return null;
+    };
+
+    const embedUrl = post.videoUrl ? getVideoEmbed(post.videoUrl) : null;
+
+    return (
+      <article className="py-20">
+        <div className="mb-8">
+          <button
+            onClick={() => onNavigate?.('video')}
+            className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Retour aux Vidéos
+          </button>
+        </div>
+        <div className="mb-8">
+          {post.playlist && (
+            <p className="text-sm text-[#6B1A2A] uppercase tracking-widest mb-2">{post.playlist}</p>
+          )}
+          <h1 className="text-4xl md:text-5xl font-light leading-tight mb-4 text-[#6B1A2A]">
+            {post.title}
+          </h1>
+          {post.description && (
+            <p className="text-lg text-[var(--text-color)]/80 leading-relaxed">
+              {post.description}
+            </p>
+          )}
+        </div>
+        {embedUrl ? (
+          <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-8">
+            <iframe
+              src={embedUrl}
+              title={post.title}
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : post.videoUrl ? (
+          <a
+            href={post.videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full aspect-video bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg flex items-center justify-center mb-8 hover:border-[#6B1A2A] transition-colors"
+          >
+            <div className="text-center">
+              <ArrowRight size={48} className="mx-auto mb-4 text-[#6B1A2A]" />
+              <p className="text-[var(--text-color)]">Voir la vidéo</p>
+            </div>
+          </a>
+        ) : null}
+        {post.content && (
+          <div className="prose max-w-none font-light leading-relaxed text-xl">
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          </div>
+        )}
+      </article>
+    );
+  }
+
   // Ebook page with cover and download
   if (post.type === 'ebook') {
     return (
       <article className="py-20">
+        <div className="mb-8">
+          <button
+            onClick={() => onNavigate?.('library')}
+            className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Retour à la Library
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
           <div className="md:col-span-1">
             {post.coverImage ? (
@@ -432,8 +576,21 @@ const PostPage = ({ slug }: { slug: string }) => {
     );
   }
 
+  // Determine back navigation based on type
+  const backPath = post.type === 'model' ? 'reflexion' : post.type === 'note' ? 'notes' : post.type === 'video' ? 'video' : 'home';
+  const backLabel = post.type === 'model' ? 'Retour aux Réflexions' : post.type === 'note' ? 'Retour aux Notes de lecture' : post.type === 'video' ? 'Retour aux Vidéos' : 'Retour';
+
   return (
     <article className="py-20">
+      <div className="mb-8">
+        <button
+          onClick={() => onNavigate?.(backPath)}
+          className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
+        >
+          <ArrowLeft size={16} />
+          {backLabel}
+        </button>
+      </div>
       <header className="mb-16">
         <p className="text-sm text-[var(--text-color)]/40 font-light mb-4 uppercase tracking-widest">
           {formatDate(post.createdAt)} • {post.type}
@@ -459,6 +616,7 @@ const PostPage = ({ slug }: { slug: string }) => {
 };
 
 const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: string) => void, posts: Post[], onRefresh: () => void }) => {
+  const [view, setView] = useState<'list' | 'table'>('list');
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure?')) {
       await fetch(`/api/posts/${id}`, { method: 'DELETE' });
@@ -470,38 +628,111 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
     <div className="py-20">
       <div className="flex items-center justify-between mb-16">
         <h1 className="text-4xl font-light text-[#6B1A2A]">Dashboard</h1>
-        <button
-          onClick={() => onNavigate('admin/new')}
-          className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
-        >
-          <Plus size={16} /> New Content
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="flex border border-[var(--border-color)]">
+            <button
+              onClick={() => setView('list')}
+              className={cn(
+                "px-3 py-1.5 text-sm transition-colors",
+                view === 'list' ? "bg-[#6B1A2A] text-white" : "text-[var(--text-color)]/60 hover:text-[#6B1A2A]"
+              )}
+            >
+              Liste
+            </button>
+            <button
+              onClick={() => setView('table')}
+              className={cn(
+                "px-3 py-1.5 text-sm transition-colors border-l border-[var(--border-color)]",
+                view === 'table' ? "bg-[#6B1A2A] text-white" : "text-[var(--text-color)]/60 hover:text-[#6B1A2A]"
+              )}
+            >
+              Tableau
+            </button>
+          </div>
+          <button
+            onClick={() => onNavigate('admin/new')}
+            className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+          >
+            <Plus size={16} /> New Content
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <div key={post.id} className="flex items-center justify-between p-4 border border-[var(--border-color)] bg-[var(--card-bg)] hover:border-[var(--text-color)]/20 transition-colors">
-            <div>
-              <h3 className="font-medium text-base text-[var(--text-color)]">{post.title}</h3>
-              <p className="text-sm text-[var(--text-color)]/40 font-light">{post.type} • {post.status} • {formatDate(post.createdAt)}</p>
+      {view === 'list' ? (
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <div key={post.id} className="flex items-center justify-between p-4 border border-[var(--border-color)] bg-[var(--card-bg)] hover:border-[var(--text-color)]/20 transition-colors">
+              <div>
+                <h3 className="font-medium text-base text-[var(--text-color)]">{post.title}</h3>
+                <p className="text-sm text-[var(--text-color)]/40 font-light">{post.type} • {post.status} • {formatDate(post.createdAt)}</p>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => onNavigate(`admin/edit/${post.slug}`)}
+                  className="text-sm text-[#6B1A2A] hover:underline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(post.id)}
+                  className="text-sm text-red-500/60 hover:text-red-500"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => onNavigate(`admin/edit/${post.slug}`)}
-                className="text-sm text-[#6B1A2A] hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(post.id)}
-                className="text-sm text-red-500/60 hover:text-red-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="border border-[var(--border-color)]">
+          <table className="w-full">
+            <thead className="bg-[var(--card-bg)] border-b border-[var(--border-color)]">
+              <tr>
+                <th className="text-left text-xs uppercase tracking-wider text-[var(--text-color)]/40 font-medium px-4 py-3">Titre</th>
+                <th className="text-left text-xs uppercase tracking-wider text-[var(--text-color)]/40 font-medium px-4 py-3">Type</th>
+                <th className="text-left text-xs uppercase tracking-wider text-[var(--text-color)]/40 font-medium px-4 py-3">Statut</th>
+                <th className="text-left text-xs uppercase tracking-wider text-[var(--text-color)]/40 font-medium px-4 py-3">Date</th>
+                <th className="text-right text-xs uppercase tracking-wider text-[var(--text-color)]/40 font-medium px-4 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {posts.map((post) => (
+                <tr key={post.id} className="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--card-bg)]/50">
+                  <td className="px-4 py-3 text-[var(--text-color)]">{post.title}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--text-color)]/60">
+                    <span className="px-2 py-1 bg-[var(--card-bg)] text-xs uppercase tracking-wider rounded-sm">{post.type}</span>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className={cn(
+                      "px-2 py-1 text-xs uppercase tracking-wider rounded-sm",
+                      post.status === 'published' ? "bg-green-500/10 text-green-600" : "bg-yellow-500/10 text-yellow-600"
+                    )}>
+                      {post.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-[var(--text-color)]/60">{formatDate(post.createdAt)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        onClick={() => onNavigate(`admin/edit/${post.slug}`)}
+                        className="text-sm text-[#6B1A2A] hover:underline"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="text-sm text-red-500/60 hover:text-red-500"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
@@ -515,6 +746,8 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
   const [description, setDescription] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [downloadUrl, setDownloadUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [playlist, setPlaylist] = useState('');
   const [loading, setLoading] = useState(!!slug);
   const [saving, setSaving] = useState(false);
 
@@ -531,6 +764,8 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
           setDescription(data.description || '');
           setCoverImage(data.coverImage || '');
           setDownloadUrl(data.downloadUrl || '');
+          setVideoUrl(data.videoUrl || '');
+          setPlaylist(data.playlist || '');
           setLoading(false);
         });
     }
@@ -555,6 +790,11 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
       data.description = description;
       data.coverImage = coverImage;
       data.downloadUrl = downloadUrl;
+    } else if (type === 'video') {
+      data.description = description;
+      data.coverImage = coverImage;
+      data.videoUrl = videoUrl;
+      data.playlist = playlist;
     } else {
       data.tags = tags;
     }
@@ -690,6 +930,53 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
                 value={downloadUrl}
                 onChange={(e) => setDownloadUrl(e.target.value)}
                 placeholder="https://drive.google.com/..."
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+              />
+            </div>
+          </>
+        )}
+
+        {type === 'video' && (
+          <>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Playlist</label>
+              <input
+                type="text"
+                value={playlist}
+                onChange={(e) => setPlaylist(e.target.value)}
+                placeholder="Nom de la playlist"
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Miniature (Cover Image URL)</label>
+              <input
+                type="url"
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+                placeholder="https://..."
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+              />
+              {coverImage && (
+                <img src={coverImage} alt="Preview" className="mt-2 max-w-[200px] rounded" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Lien de la vidéo (YouTube / Drive)</label>
+              <input
+                type="url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://youtube.com/watch?v=... ou https://drive.google.com/..."
                 className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
               />
             </div>
@@ -869,7 +1156,7 @@ export default function App() {
 
     if (currentPage.startsWith('post/')) {
       const slug = currentPage.split('/')[1];
-      return <PostPage slug={slug} />;
+      return <PostPage slug={slug} onNavigate={setCurrentPage} />;
     }
 
     if (currentPage === 'admin') {

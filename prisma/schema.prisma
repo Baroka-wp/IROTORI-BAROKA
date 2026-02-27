@@ -24,9 +24,11 @@ model Post {
   content     String
   status      String   @default("draft") // draft, published
   tags        String?  // Comma separated tags or subcategory for model
-  description String?  // Description pour les ebooks
+  description String?  // Description pour les ebooks et videos
   coverImage  String?  // URL de l'image de couverture
   downloadUrl String?  // Lien de telechargement (Google Drive)
+  videoUrl    String?  // Lien de la video (YouTube / Drive)
+  playlist    String?  // Nom de la playlist pour les videos
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
