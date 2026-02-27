@@ -820,7 +820,7 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
 
   const handleDelete = async (id: string) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?')) {
-      await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+      await fetch(`/api/post?slug=${id}`, { method: 'DELETE' });
       onRefresh();
     }
   };
@@ -1134,9 +1134,12 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string
   useEffect(() => {
     if (slug) {
       console.log('Fetching post:', slug);
-      fetch(`/api/posts/${slug}`)
+      fetch(`/api/post?slug=${encodeURIComponent(slug)}`)
         .then(res => {
           console.log('Response status:', res.status);
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
           return res.json();
         })
         .then(data => {
@@ -1188,7 +1191,7 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string
       data.tags = tags;
     }
 
-    const url = slug ? `/api/posts/${slug}` : '/api/posts';
+    const url = slug ? `/api/post?slug=${encodeURIComponent(slug)}` : '/api/posts';
     const method = slug ? 'PUT' : 'POST';
 
     try {

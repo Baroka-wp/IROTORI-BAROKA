@@ -4,12 +4,12 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers + No cache
+  // CORS + No cache
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
@@ -17,43 +17,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  const { slug } = req.query;
+  const { slug, id } = req.query;
 
-  console.log('GET /api/posts/[slug] - slug:', slug);
+  console.log('Request:', req.method, '- slug:', slug, 'id:', id);
 
-  if (req.method === 'GET') {
+  // GET single post by slug
+  if (req.method === 'GET' && slug) {
     try {
-      if (!slug) {
-        return res.status(400).json({ error: 'Slug is required' });
-      }
-
       const post = await prisma.post.findUnique({
         where: { slug: slug as string },
       });
-
-      console.log('Post found:', post ? 'yes' : 'no');
-
+      
       if (!post) {
+        console.log('Post not found for slug:', slug);
         return res.status(404).json({ error: 'Post not found' });
       }
-
+      
+      console.log('Post found:', post.id);
       return res.status(200).json(post);
     } catch (error: any) {
-      console.error('GET /api/posts/[slug] error:', error);
-      return res.status(500).json({ error: error.message, stack: error.stack });
+      console.error('GET error:', error);
+      return res.status(500).json({ error: error.message });
     }
   }
 
-  if (req.method === 'PUT') {
+  // PUT update post by slug
+  if (req.method === 'PUT' && slug) {
     try {
-      if (!slug) {
-        return res.status(400).json({ error: 'Slug is required' });
-      }
-
       const { title, type, content, status, tags, description, coverImage, downloadUrl, videoUrl, playlist } = req.body;
-
-      console.log('PUT /api/posts/[slug] - updating:', slug, req.body);
-
+      
       const post = await prisma.post.update({
         where: { slug: slug as string },
         data: {
@@ -69,29 +61,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           playlist,
         },
       });
-
+      
+      console.log('Post updated:', post.id);
       return res.status(200).json(post);
     } catch (error: any) {
-      console.error('PUT /api/posts/[slug] error:', error);
+      console.error('PUT error:', error);
       return res.status(400).json({ error: error.message });
     }
   }
 
-  if (req.method === 'DELETE') {
+  // DELETE post by id or slug
+  if (req.method === 'DELETE' && (id || slug)) {
     try {
-      if (!slug) {
-        return res.status(400).json({ error: 'Slug is required' });
-      }
-
       await prisma.post.delete({
-        where: { id: slug as string },
+        where: { id: (id || slug) as string },
       });
+      console.log('Post deleted');
       return res.status(200).json({ success: true });
     } catch (error: any) {
-      console.error('DELETE /api/posts/[slug] error:', error);
+      console.error('DELETE error:', error);
       return res.status(400).json({ error: error.message });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(400).json({ error: 'Invalid request' });
 }
