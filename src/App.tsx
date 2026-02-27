@@ -301,6 +301,32 @@ const HomePage = ({ onNavigate, posts }: { onNavigate: (p: string) => void, post
 );
 
 const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, title?: string, posts: Post[], onNavigate: (p: string) => void }) => {
+  const [videoPlaylist, setVideoPlaylist] = useState<string>('');
+  const [videoPosts, setVideoPosts] = useState<Post[]>([]);
+  const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
+
+  // Load video playlists on mount
+  useEffect(() => {
+    if (type === 'video') {
+      // Get playlists from initial posts
+      const playlists = Array.from(
+        new Set(posts.filter(p => p.type === 'video').map(p => p.playlist).filter(Boolean))
+      ) as string[];
+      setVideoPlaylists(playlists);
+    }
+  }, [type, posts]);
+
+  const handlePlaylistSelect = (playlistName: string) => {
+    setVideoPlaylist(playlistName);
+    if (playlistName === 'all') {
+      setVideoPosts(posts.filter(p => p.type === 'video'));
+    } else {
+      fetch(`/api/posts?type=video&playlist=${encodeURIComponent(playlistName)}`)
+        .then(res => res.json())
+        .then(data => setVideoPosts(data));
+    }
+  };
+
   const filteredPosts = posts.filter(p => p.type === type || type === 'all');
   const displayTitle = title || (type === 'all' ? 'Archive' : type.charAt(0).toUpperCase() + type.slice(1));
 
@@ -309,9 +335,9 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
     return (
       <div>
         {/* Banner */}
-        <div className="bg-[#6B1A2A]/5 border-b border-[#6B1A2A]/20 py-8 mb-12">
+        <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
           <div className="max-w-[680px] mx-auto px-4">
-            <h1 className="text-xl md:text-2xl font-semibold text-[#6B1A2A]">{displayTitle}</h1>
+            <h1 className="text-base md:text-lg font-normal text-[#6B1A2A]">{displayTitle}</h1>
           </div>
         </div>
         {/* Content */}
@@ -364,67 +390,110 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
     );
   }
 
-  // Video page with playlists
+  // Video page with playlists - Show playlist selection first
   if (type === 'video') {
-    // Group videos by playlist
-    const playlists = filteredPosts.reduce((acc, post) => {
-      const playlistName = post.playlist || 'Autres vidéos';
-      if (!acc[playlistName]) acc[playlistName] = [];
-      acc[playlistName].push(post);
-      return acc;
-    }, {} as Record<string, Post[]>);
-
-    return (
-      <div>
-        {/* Banner */}
-        <div className="bg-[#6B1A2A]/5 border-b border-[#6B1A2A]/20 py-8 mb-12">
-          <div className="max-w-[680px] mx-auto px-4">
-            <h1 className="text-xl md:text-2xl font-semibold text-[#6B1A2A]">{displayTitle}</h1>
-          </div>
-        </div>
-        {/* Content */}
-        <div className="max-w-[680px] mx-auto px-4 pb-20">
-        {Object.entries(playlists).map(([playlistName, playlistPosts]) => (
-          <div key={playlistName} className="mb-16">
-            <h2 className="text-2xl font-light text-[#6B1A2A] mb-8">{playlistName}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {playlistPosts.map((post) => (
-                <article
-                  key={post.id}
-                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col"
-                  onClick={() => onNavigate(`post/${post.slug}`)}
-                >
-                  {post.coverImage ? (
-                    <div className="relative">
-                      <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
-                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                          <ArrowRight size={28} className="text-[#6B1A2A] ml-1" />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
-                      <FileText size={48} className="text-[var(--text-color)]/20" />
-                    </div>
-                  )}
-                  <div className="p-6 flex-grow">
-                    <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-3 line-clamp-2 leading-snug">
-                      {post.title}
-                    </h3>
-                    {post.description && (
-                      <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 leading-relaxed">
-                        {post.description}
-                      </p>
-                    )}
-                  </div>
-                </article>
-              ))}
+    // If no playlist selected, show playlist cards
+    if (!videoPlaylist) {
+      return (
+        <div>
+          {/* Banner */}
+          <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
+            <div className="max-w-[680px] mx-auto px-4">
+              <h1 className="text-base md:text-lg font-normal text-[#6B1A2A] mb-2">{displayTitle}</h1>
+              <p className="text-sm text-[var(--text-color)]/60">Quelle catégorie vous intéresse ?</p>
             </div>
           </div>
-        ))}
-        {filteredPosts.length === 0 && (
-          <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
+
+          {/* Content */}
+          <div className="max-w-[680px] mx-auto px-4 pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {videoPlaylists.length > 0 ? (
+                videoPlaylists.map((playlistName) => (
+                  <button
+                    key={playlistName}
+                    onClick={() => handlePlaylistSelect(playlistName)}
+                    className="group p-6 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg hover:border-[#6B1A2A] hover:shadow-md transition-all text-left"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors">
+                        {playlistName}
+                      </h3>
+                      <ArrowRight size={20} className="text-[var(--text-color)]/40 group-hover:text-[#6B1A2A] transition-colors" />
+                    </div>
+                    <p className="text-sm text-[var(--text-color)]/40 mt-2">
+                      {posts.filter(p => p.type === 'video' && p.playlist === playlistName).length} vidéo(s)
+                    </p>
+                  </button>
+                ))
+              ) : (
+                <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-8">
+                  Aucune playlist disponible.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Playlist selected, show videos
+    return (
+      <div>
+        {/* Banner with back button and playlist info */}
+        <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
+          <div className="max-w-[680px] mx-auto px-4">
+            <button
+              onClick={() => { setVideoPlaylist(''); setVideoPosts([]); }}
+              className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors mb-4"
+            >
+              <ArrowLeft size={16} />
+              Choisir une autre catégorie
+            </button>
+            <h2 className="text-xl font-light text-[#6B1A2A]">{videoPlaylist}</h2>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-[680px] mx-auto px-4 pb-20">
+        {videoPosts.length === 0 ? (
+          <p className="text-[var(--text-color)]/40 font-light italic text-center py-8">
+            Aucune vidéo dans cette playlist.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {videoPosts.map((post) => (
+              <article
+                key={post.id}
+                className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col"
+                onClick={() => onNavigate(`post/${post.slug}`)}
+              >
+                {post.coverImage ? (
+                  <div className="relative">
+                    <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
+                        <ArrowRight size={28} className="text-[#6B1A2A] ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
+                    <FileText size={48} className="text-[var(--text-color)]/20" />
+                  </div>
+                )}
+                <div className="p-6 flex-grow">
+                  <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-3 line-clamp-2 leading-snug">
+                    {post.title}
+                  </h3>
+                  {post.description && (
+                    <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 leading-relaxed">
+                      {post.description}
+                    </p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
         )}
         </div>
       </div>
@@ -434,9 +503,9 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   return (
     <div>
       {/* Banner */}
-      <div className="bg-[#6B1A2A]/5 border-b border-[#6B1A2A]/20 py-8 mb-12">
+      <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
         <div className="max-w-[680px] mx-auto px-4">
-          <h1 className="text-xl md:text-2xl font-semibold text-[#6B1A2A]">{displayTitle}</h1>
+          <h1 className="text-base md:text-lg font-normal text-[#6B1A2A]">{displayTitle}</h1>
         </div>
       </div>
       {/* Content */}
@@ -1170,26 +1239,38 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Playlist</label>
-              <select
-                value={playlist}
-                onChange={(e) => setPlaylist(e.target.value)}
-                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
-              >
-                <option value="">Sélectionner une playlist...</option>
-                {existingPlaylists.map((name) => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-                <option value="---new---">+ Nouvelle playlist</option>
-              </select>
-              {playlist === '---new---' && (
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">
+                Playlist
+                <span className="text-[var(--text-color)]/40 font-normal ml-2">(optionnel - pour regrouper vos vidéos)</span>
+              </label>
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Nom de la nouvelle playlist"
-                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none mt-2"
+                  value={playlist}
                   onChange={(e) => setPlaylist(e.target.value)}
-                  autoFocus
+                  placeholder="Nom de la playlist (ex: Tutoriels, Conférences...)"
+                  className="flex-1 bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+                  list="playlist-suggestions"
                 />
+                <datalist id="playlist-suggestions">
+                  {existingPlaylists.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+                {playlist && (
+                  <button
+                    type="button"
+                    onClick={() => setPlaylist('')}
+                    className="px-3 text-sm text-[var(--text-color)]/40 hover:text-red-500 transition-colors"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              {existingPlaylists.length > 0 && (
+                <p className="text-xs text-[var(--text-color)]/40">
+                  Playlists existantes : {existingPlaylists.join(', ')}
+                </p>
               )}
             </div>
             <div className="space-y-2">

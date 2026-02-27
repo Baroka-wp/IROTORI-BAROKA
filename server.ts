@@ -65,11 +65,12 @@ async function startServer() {
 
   // Posts
   app.get("/api/posts", async (req, res) => {
-    const { type, status } = req.query;
+    const { type, status, playlist } = req.query;
     const where: any = {};
     if (type) where.type = type;
     if (status) where.status = status;
-    
+    if (playlist) where.playlist = playlist;
+
     const posts = await prisma.post.findMany({
       where,
       orderBy: { createdAt: "desc" },
