@@ -364,33 +364,33 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
         {Object.entries(playlists).map(([playlistName, playlistPosts]) => (
           <div key={playlistName} className="mb-16">
             <h2 className="text-2xl font-light text-[#6B1A2A] mb-8">{playlistName}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {playlistPosts.map((post) => (
                 <article
                   key={post.id}
-                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
+                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col"
                   onClick={() => onNavigate(`post/${post.slug}`)}
                 >
                   {post.coverImage ? (
                     <div className="relative">
-                      <img src={post.coverImage} alt={post.title} className="w-full h-48 object-cover" />
+                      <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
-                          <ArrowRight size={20} className="text-[#6B1A2A] ml-1" />
+                        <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
+                          <ArrowRight size={28} className="text-[#6B1A2A] ml-1" />
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-48 bg-[var(--bg-color)] flex items-center justify-center">
+                    <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
                       <FileText size={48} className="text-[var(--text-color)]/20" />
                     </div>
                   )}
-                  <div className="p-4">
-                    <h3 className="text-base font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2 line-clamp-2">
+                  <div className="p-6 flex-grow">
+                    <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-3 line-clamp-2 leading-snug">
                       {post.title}
                     </h3>
                     {post.description && (
-                      <p className="text-sm text-[var(--text-color)]/60 line-clamp-2">
+                      <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 leading-relaxed">
                         {post.description}
                       </p>
                     )}
@@ -431,6 +431,7 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
 const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string) => void }) => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
     fetch(`/api/posts/${slug}`)
@@ -489,12 +490,18 @@ const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string)
         </div>
         {embedUrl ? (
           <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-8">
+            {!videoLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-[#6B1A2A] border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
             <iframe
               src={embedUrl}
               title={post.title}
               className="absolute inset-0 w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              onLoad={() => setVideoLoaded(true)}
             />
           </div>
         ) : post.videoUrl ? (
@@ -737,7 +744,7 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
   );
 };
 
-const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNavigate: (p: string) => void, onRefresh: () => void }) => {
+const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string, onNavigate: (p: string) => void, onRefresh: () => void, posts: Post[] }) => {
   const [title, setTitle] = useState('');
   const [type, setType] = useState<string>('video');
   const [content, setContent] = useState('');
@@ -750,6 +757,11 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
   const [playlist, setPlaylist] = useState('');
   const [loading, setLoading] = useState(!!slug);
   const [saving, setSaving] = useState(false);
+
+  // Get existing playlists from video posts
+  const existingPlaylists = Array.from(
+    new Set(posts.filter(p => p.type === 'video' && p.playlist).map(p => p.playlist))
+  ).filter(Boolean) as string[];
 
   useEffect(() => {
     if (slug) {
@@ -949,13 +961,26 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
             </div>
             <div className="space-y-2">
               <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Playlist</label>
-              <input
-                type="text"
+              <select
                 value={playlist}
                 onChange={(e) => setPlaylist(e.target.value)}
-                placeholder="Nom de la playlist"
                 className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
-              />
+              >
+                <option value="">Sélectionner une playlist...</option>
+                {existingPlaylists.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+                <option value="---new---">+ Nouvelle playlist</option>
+              </select>
+              {playlist === '---new---' && (
+                <input
+                  type="text"
+                  placeholder="Nom de la nouvelle playlist"
+                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none mt-2"
+                  onChange={(e) => setPlaylist(e.target.value)}
+                  autoFocus
+                />
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Miniature (Cover Image URL)</label>
@@ -1166,13 +1191,13 @@ export default function App() {
 
     if (currentPage === 'admin/new') {
       if (!user) return <LoginPage onLogin={() => { fetch('/api/auth/me').then(res => res.json()).then(data => setUser(data.user)); setCurrentPage('admin/new'); }} />;
-      return <AdminEditorPage onNavigate={setCurrentPage} onRefresh={fetchPosts} />;
+      return <AdminEditorPage onNavigate={setCurrentPage} onRefresh={fetchPosts} posts={posts} />;
     }
 
     if (currentPage.startsWith('admin/edit/')) {
       if (!user) return <LoginPage onLogin={() => { fetch('/api/auth/me').then(res => res.json()).then(data => setUser(data.user)); setCurrentPage(currentPage); }} />;
       const slug = currentPage.split('/')[2];
-      return <AdminEditorPage slug={slug} onNavigate={setCurrentPage} onRefresh={fetchPosts} />;
+      return <AdminEditorPage slug={slug} onNavigate={setCurrentPage} onRefresh={fetchPosts} posts={posts} />;
     }
 
     return <div>404</div>;
