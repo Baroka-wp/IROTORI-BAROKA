@@ -9,14 +9,22 @@ import {
   Plus,
   Settings,
   LogOut,
-  ChevronRight,
   ChevronDown,
   ArrowLeft,
   Menu,
   X,
   ArrowRight,
   Sun,
-  Moon
+  Moon,
+  Eye,
+  LayoutList,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Trash2,
+  Edit3,
+  Video,
+  AlignLeft
 } from 'lucide-react';
 import { cn, formatDate, Post } from './lib/utils';
 import Editor from './components/Editor';
@@ -36,7 +44,7 @@ const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: 
 
   const reflexionSubItems = [
     { name: 'Spiritualité', path: 'reflexion/spiritualite' },
-    { name: 'Entrepreneuriat', path: 'reflexion/entrepreneuriat' },
+    { name: 'Entrepreneurial/MindSet', path: 'reflexion/entrepreneurial' },
     { name: 'Management', path: 'reflexion/management' },
     { name: 'Éducation', path: 'reflexion/education' },
   ];
@@ -299,8 +307,15 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   // Library page with cover images and download links
   if (type === 'ebook') {
     return (
-      <div className="py-20">
-        <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
+      <div>
+        {/* Banner */}
+        <div className="bg-[#6B1A2A]/5 border-b border-[#6B1A2A]/20 py-8 mb-12">
+          <div className="max-w-[680px] mx-auto px-4">
+            <h1 className="text-xl md:text-2xl font-semibold text-[#6B1A2A]">{displayTitle}</h1>
+          </div>
+        </div>
+        {/* Content */}
+        <div className="max-w-[680px] mx-auto px-4 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filteredPosts.length > 0 ? (
             filteredPosts.map((post) => (
@@ -344,6 +359,7 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
             <p className="text-[var(--text-color)]/40 font-light italic col-span-full">Nothing here yet.</p>
           )}
         </div>
+        </div>
       </div>
     );
   }
@@ -359,8 +375,15 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
     }, {} as Record<string, Post[]>);
 
     return (
-      <div className="py-20">
-        <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
+      <div>
+        {/* Banner */}
+        <div className="bg-[#6B1A2A]/5 border-b border-[#6B1A2A]/20 py-8 mb-12">
+          <div className="max-w-[680px] mx-auto px-4">
+            <h1 className="text-xl md:text-2xl font-semibold text-[#6B1A2A]">{displayTitle}</h1>
+          </div>
+        </div>
+        {/* Content */}
+        <div className="max-w-[680px] mx-auto px-4 pb-20">
         {Object.entries(playlists).map(([playlistName, playlistPosts]) => (
           <div key={playlistName} className="mb-16">
             <h2 className="text-2xl font-light text-[#6B1A2A] mb-8">{playlistName}</h2>
@@ -403,13 +426,21 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
         {filteredPosts.length === 0 && (
           <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
         )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="py-20">
-      <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
+    <div>
+      {/* Banner */}
+      <div className="bg-[#6B1A2A]/5 border-b border-[#6B1A2A]/20 py-8 mb-12">
+        <div className="max-w-[680px] mx-auto px-4">
+          <h1 className="text-xl md:text-2xl font-semibold text-[#6B1A2A]">{displayTitle}</h1>
+        </div>
+      </div>
+      {/* Content */}
+      <div className="max-w-[680px] mx-auto px-4 pb-20">
       <div className="space-y-16">
         {filteredPosts.length > 0 ? (
           filteredPosts.map((post) => (
@@ -423,6 +454,7 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
         ) : (
           <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
         )}
+      </div>
       </div>
     </div>
   );
@@ -624,74 +656,204 @@ const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string)
 
 const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: string) => void, posts: Post[], onRefresh: () => void }) => {
   const [view, setView] = useState<'list' | 'table'>('list');
+  const [filter, setFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure?')) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?')) {
       await fetch(`/api/posts/${id}`, { method: 'DELETE' });
       onRefresh();
     }
   };
 
+  // Filter posts
+  const filteredPosts = filter === 'all' ? posts : posts.filter(p => p.type === filter);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
+  const paginatedPosts = filteredPosts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'video': return <Video size={14} className="inline mr-1" />;
+      case 'note': return <Book size={14} className="inline mr-1" />;
+      case 'model': return <Brain size={14} className="inline mr-1" />;
+      case 'ebook': return <Library size={14} className="inline mr-1" />;
+      default: return <FileText size={14} className="inline mr-1" />;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'video': return 'Vidéo';
+      case 'note': return 'Note';
+      case 'model': return 'Réflexion';
+      case 'ebook': return 'Ebook';
+      default: return type;
+    }
+  };
+
   return (
-    <div className="py-20">
-      <div className="flex items-center justify-between mb-16">
-        <h1 className="text-4xl font-light text-[#6B1A2A]">Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <div className="flex border border-[var(--border-color)]">
+    <div className="py-12">
+      {/* Header */}
+      <div className="mb-8 pb-6 border-b border-[var(--border-color)]">
+        <h1 className="text-3xl font-light text-[#6B1A2A] mb-4">Dashboard</h1>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Filter */}
+          <div className="relative">
+            <Filter size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-color)]/40" />
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="pl-9 pr-8 py-2 text-sm bg-[var(--card-bg)] border border-[var(--border-color)] text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-md appearance-none cursor-pointer hover:border-[var(--text-color)]/40 transition-colors"
+            >
+              <option value="all">Toutes catégories</option>
+              <option value="video">Vidéo</option>
+              <option value="note">Note de lecture</option>
+              <option value="model">Réflexion</option>
+              <option value="ebook">Ebook</option>
+            </select>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex border border-[var(--border-color)] rounded-md overflow-hidden">
             <button
               onClick={() => setView('list')}
               className={cn(
-                "px-3 py-1.5 text-sm transition-colors",
-                view === 'list' ? "bg-[#6B1A2A] text-white" : "text-[var(--text-color)]/60 hover:text-[#6B1A2A]"
+                "px-3 py-2 flex items-center gap-2 text-sm transition-colors",
+                view === 'list' ? "bg-[#6B1A2A] text-white" : "bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A]"
               )}
             >
-              Liste
+              <LayoutList size={14} />
+              <span className="hidden sm:inline">Liste</span>
             </button>
             <button
               onClick={() => setView('table')}
               className={cn(
-                "px-3 py-1.5 text-sm transition-colors border-l border-[var(--border-color)]",
-                view === 'table' ? "bg-[#6B1A2A] text-white" : "text-[var(--text-color)]/60 hover:text-[#6B1A2A]"
+                "px-3 py-2 flex items-center gap-2 text-sm transition-colors border-l border-[var(--border-color)]",
+                view === 'table' ? "bg-[#6B1A2A] text-white" : "bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A]"
               )}
             >
-              Tableau
+              <Eye size={14} />
+              <span className="hidden sm:inline">Tableau</span>
             </button>
           </div>
+
+          {/* New Content Button */}
           <button
             onClick={() => onNavigate('admin/new')}
-            className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity rounded-md shadow-sm"
           >
-            <Plus size={16} /> New Content
+            <Plus size={16} />
+            <span className="hidden sm:inline">Nouveau</span>
           </button>
         </div>
       </div>
 
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-[#6B1A2A]/10 rounded-md">
+              <FileText size={18} className="text-[#6B1A2A]" />
+            </div>
+            <span className="text-2xl font-light text-[var(--text-color)]">{posts.length}</span>
+          </div>
+          <p className="text-xs text-[var(--text-color)]/40 uppercase tracking-wider">Total</p>
+        </div>
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-green-500/10 rounded-md">
+              <Eye size={18} className="text-green-600" />
+            </div>
+            <span className="text-2xl font-light text-[var(--text-color)]">{posts.filter(p => p.status === 'published').length}</span>
+          </div>
+          <p className="text-xs text-[var(--text-color)]/40 uppercase tracking-wider">Publiés</p>
+        </div>
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-yellow-500/10 rounded-md">
+              <AlignLeft size={18} className="text-yellow-600" />
+            </div>
+            <span className="text-2xl font-light text-[var(--text-color)]">{posts.filter(p => p.status === 'draft').length}</span>
+          </div>
+          <p className="text-xs text-[var(--text-color)]/40 uppercase tracking-wider">Brouillons</p>
+        </div>
+        <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-[#6B1A2A]/10 rounded-md">
+              <Video size={18} className="text-[#6B1A2A]" />
+            </div>
+            <span className="text-2xl font-light text-[var(--text-color)]">{filteredPosts.length}</span>
+          </div>
+          <p className="text-xs text-[var(--text-color)]/40 uppercase tracking-wider">Filtrés</p>
+        </div>
+      </div>
+
+      {/* Content List */}
       {view === 'list' ? (
-        <div className="space-y-4">
-          {posts.map((post) => (
-            <div key={post.id} className="flex items-center justify-between p-4 border border-[var(--border-color)] bg-[var(--card-bg)] hover:border-[var(--text-color)]/20 transition-colors">
-              <div>
-                <h3 className="font-medium text-base text-[var(--text-color)]">{post.title}</h3>
-                <p className="text-sm text-[var(--text-color)]/40 font-light">{post.type} • {post.status} • {formatDate(post.createdAt)}</p>
+        <div className="space-y-3">
+          {paginatedPosts.map((post) => (
+            <div
+              key={post.id}
+              className="group flex items-center justify-between p-4 border border-[var(--border-color)] bg-[var(--card-bg)] rounded-lg hover:border-[#6B1A2A]/50 hover:shadow-md transition-all"
+            >
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className={cn(
+                  "p-2 rounded-md",
+                  post.type === 'video' ? "bg-red-500/10 text-red-600" :
+                  post.type === 'note' ? "bg-blue-500/10 text-blue-600" :
+                  post.type === 'model' ? "bg-purple-500/10 text-purple-600" :
+                  "bg-green-500/10 text-green-600"
+                )}>
+                  {getTypeIcon(post.type)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-medium text-base text-[var(--text-color)] truncate">{post.title}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs text-[var(--text-color)]/40">{getTypeLabel(post.type)}</span>
+                    <span className="text-[var(--text-color)]/20">•</span>
+                    <span className={cn(
+                      "text-xs px-2 py-0.5 rounded-full",
+                      post.status === 'published' ? "bg-green-500/10 text-green-600" : "bg-yellow-500/10 text-yellow-600"
+                    )}>
+                      {post.status === 'published' ? 'Publié' : 'Brouillon'}
+                    </span>
+                    <span className="text-[var(--text-color)]/20">•</span>
+                    <span className="text-xs text-[var(--text-color)]/40">{formatDate(post.createdAt)}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-4">
+              <div className="flex items-center gap-2 ml-4">
                 <button
                   onClick={() => onNavigate(`admin/edit/${post.slug}`)}
-                  className="text-sm text-[#6B1A2A] hover:underline"
+                  className="p-2 text-[var(--text-color)]/40 hover:text-[#6B1A2A] hover:bg-[#6B1A2A]/10 rounded-md transition-colors"
+                  title="Modifier"
                 >
-                  Edit
+                  <Edit3 size={16} />
                 </button>
                 <button
                   onClick={() => handleDelete(post.id)}
-                  className="text-sm text-red-500/60 hover:text-red-500"
+                  className="p-2 text-[var(--text-color)]/40 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                  title="Supprimer"
                 >
-                  Delete
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="border border-[var(--border-color)]">
+        <div className="border border-[var(--border-color)] rounded-lg overflow-hidden">
           <table className="w-full">
             <thead className="bg-[var(--card-bg)] border-b border-[var(--border-color)]">
               <tr>
@@ -703,34 +865,41 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
               </tr>
             </thead>
             <tbody>
-              {posts.map((post) => (
-                <tr key={post.id} className="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--card-bg)]/50">
-                  <td className="px-4 py-3 text-[var(--text-color)]">{post.title}</td>
-                  <td className="px-4 py-3 text-sm text-[var(--text-color)]/60">
-                    <span className="px-2 py-1 bg-[var(--card-bg)] text-xs uppercase tracking-wider rounded-sm">{post.type}</span>
+              {paginatedPosts.map((post) => (
+                <tr key={post.id} className="border-b border-[var(--border-color)] last:border-0 hover:bg-[var(--card-bg)]/50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-[var(--text-color)] truncate max-w-xs">{post.title}</div>
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[var(--card-bg)] text-xs uppercase tracking-wider rounded-md text-[var(--text-color)]/60">
+                      {getTypeIcon(post.type)}
+                      {getTypeLabel(post.type)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
                     <span className={cn(
-                      "px-2 py-1 text-xs uppercase tracking-wider rounded-sm",
+                      "px-2.5 py-1 text-xs uppercase tracking-wider rounded-md",
                       post.status === 'published' ? "bg-green-500/10 text-green-600" : "bg-yellow-500/10 text-yellow-600"
                     )}>
-                      {post.status}
+                      {post.status === 'published' ? 'Publié' : 'Brouillon'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-[var(--text-color)]/60">{formatDate(post.createdAt)}</td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => onNavigate(`admin/edit/${post.slug}`)}
-                        className="text-sm text-[#6B1A2A] hover:underline"
+                        className="p-1.5 text-[#6B1A2A]/60 hover:text-[#6B1A2A] hover:bg-[#6B1A2A]/10 rounded-md transition-colors"
+                        title="Modifier"
                       >
-                        Edit
+                        <Edit3 size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(post.id)}
-                        className="text-sm text-red-500/60 hover:text-red-500"
+                        className="p-1.5 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                        title="Supprimer"
                       >
-                        Delete
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -738,6 +907,47 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8 pt-6 border-t border-[var(--border-color)]">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm border border-[var(--border-color)] rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--card-bg)] hover:border-[#6B1A2A] transition-colors"
+          >
+            <ChevronLeft size={16} />
+            Précédent
+          </button>
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-md">
+            <span className="text-sm text-[var(--text-color)]/60">Page</span>
+            <span className="text-sm font-medium text-[#6B1A2A]">{currentPage}</span>
+            <span className="text-sm text-[var(--text-color)]/60">sur</span>
+            <span className="text-sm font-medium text-[#6B1A2A]">{totalPages}</span>
+          </div>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm border border-[var(--border-color)] rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--card-bg)] hover:border-[#6B1A2A] transition-colors"
+          >
+            Suivant
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+
+      {filteredPosts.length === 0 && (
+        <div className="text-center py-16">
+          <FileText size={48} className="mx-auto mb-4 text-[var(--text-color)]/20" />
+          <p className="text-[var(--text-color)]/40 font-light">Aucun contenu trouvé.</p>
+          <button
+            onClick={() => { setFilter('all'); setCurrentPage(1); }}
+            className="mt-4 text-sm text-[#6B1A2A] hover:underline"
+          >
+            Réinitialiser les filtres
+          </button>
         </div>
       )}
     </div>
@@ -892,7 +1102,7 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh, posts }: { slug?: string
             >
               <option value="">Sélectionner...</option>
               <option value="spiritualite">Spiritualité</option>
-              <option value="entrepreneuriat">Entrepreneuriat</option>
+              <option value="entrepreneurial">Entrepreneurial/MindSet</option>
               <option value="management">Management</option>
               <option value="education">Éducation</option>
             </select>
@@ -1091,7 +1301,7 @@ export default function App() {
     if (path === '/notes') return 'notes';
     if (path === '/reflexion') return 'reflexion';
     if (path === '/reflexion/spiritualite') return 'reflexion/spiritualite';
-    if (path === '/reflexion/entrepreneuriat') return 'reflexion/entrepreneuriat';
+    if (path === '/reflexion/entrepreneurial') return 'reflexion/entrepreneurial';
     if (path === '/reflexion/management') return 'reflexion/management';
     if (path === '/reflexion/education') return 'reflexion/education';
     if (path === '/library') return 'library';
@@ -1137,7 +1347,7 @@ export default function App() {
       'notes': '/notes',
       'reflexion': '/reflexion',
       'reflexion/spiritualite': '/reflexion/spiritualite',
-      'reflexion/entrepreneuriat': '/reflexion/entrepreneuriat',
+      'reflexion/entrepreneurial': '/reflexion/entrepreneurial',
       'reflexion/management': '/reflexion/management',
       'reflexion/education': '/reflexion/education',
       'library': '/library',
@@ -1174,7 +1384,7 @@ export default function App() {
     if (currentPage === 'notes') return <ContentListPage type="note" title="Notes de lecture" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     if (currentPage === 'reflexion') return <ContentListPage type="model" title="Réflexion" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     if (currentPage === 'reflexion/spiritualite') return <ContentListPage type="model" title="Spiritualité" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('spiritualite'))} onNavigate={setCurrentPage} />;
-    if (currentPage === 'reflexion/entrepreneuriat') return <ContentListPage type="model" title="Entrepreneuriat" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('entrepreneuriat'))} onNavigate={setCurrentPage} />;
+    if (currentPage === 'reflexion/entrepreneurial') return <ContentListPage type="model" title="Entrepreneurial/MindSet" posts={posts.filter(p => p.status === 'published' && (p.tags?.includes('entrepreneurial') || p.tags?.includes('entrepreneuriat')))} onNavigate={setCurrentPage} />;
     if (currentPage === 'reflexion/management') return <ContentListPage type="model" title="Management" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('management'))} onNavigate={setCurrentPage} />;
     if (currentPage === 'reflexion/education') return <ContentListPage type="model" title="Éducation" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('education'))} onNavigate={setCurrentPage} />;
     if (currentPage === 'library') return <ContentListPage type="ebook" title="Library" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
