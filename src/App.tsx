@@ -588,10 +588,22 @@ const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string)
   const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/posts/${slug}`)
-      .then(res => res.json())
+    console.log('PostPage: Fetching slug:', slug);
+    fetch(`/api/post?slug=${encodeURIComponent(slug)}`)
+      .then(res => {
+        console.log('PostPage: Response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
+        console.log('PostPage: Data received:', data);
         setPost(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('PostPage: Error:', err);
         setLoading(false);
       });
   }, [slug]);
