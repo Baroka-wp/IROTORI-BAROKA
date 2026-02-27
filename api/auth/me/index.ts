@@ -14,12 +14,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    try {
-      const token = req.cookies?.token;
-      if (!token) {
-        return res.status(200).json({ user: null });
-      }
+    // Parse cookies manuellement
+    const cookieHeader = req.headers.cookie;
+    let token = null;
+    
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+        const [name, ...valueParts] = cookie.split('=');
+        acc[name.trim()] = valueParts.join('=');
+        return acc;
+      }, {} as Record<string, string>);
       
+      token = cookies.token;
+    }
+
+    if (!token) {
+      return res.status(200).json({ user: null });
+    }
+    
+    try {
       const decoded = jwt.verify(token, JWT_SECRET);
       return res.status(200).json({ user: decoded });
     } catch (error) {
