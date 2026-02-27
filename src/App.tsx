@@ -262,7 +262,7 @@ const HomePage = ({ onNavigate, posts }: { onNavigate: (p: string) => void, post
         animate={{ opacity: 1, y: 0 }}
         className="text-5xl md:text-6xl font-light tracking-tight leading-tight text-[#6B1A2A]"
       >
-        A window into my mind.
+        Une fenêtre sur mon esprit.
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
@@ -270,7 +270,7 @@ const HomePage = ({ onNavigate, posts }: { onNavigate: (p: string) => void, post
         transition={{ delay: 0.1 }}
         className="text-xl text-[var(--text-color)]/60 font-light mt-6 max-w-[500px] leading-relaxed"
       >
-        Exploring mental s, philosophy, and the intersection of technology and humanity.
+        Exploration des modèles mentaux, de la philosophie, et de l'intersection entre la technologie et l'humanité.
       </motion.p>
     </header>
 
