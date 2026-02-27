@@ -225,15 +225,15 @@ const Newsletter = () => {
 
   return (
     <section className="bg-[var(--card-bg)] border border-[var(--border-color)] p-8 my-16">
-      <h3 className="text-2xl font-medium mb-2 text-[#6B1A2A]">Join the inner circle</h3>
+      <h3 className="text-2xl font-medium mb-2 text-[#6B1A2A]">Rejoignez le cercle intérieur</h3>
       <p className="text-[var(--text-color)]/60 font-light mb-6 leading-relaxed text-lg">
-        Occasional updates on new mental models, deep dives, and curated library additions. No noise, just signal.
+        Mises à jour occasionnelles sur les nouveaux modèles mentaux, analyses approfondies, et ajouts curatoriaux à la bibliothèque. Pas de bruit, que du signal.
       </p>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
           type="email"
           required
-          placeholder="email@example.com"
+          placeholder="email@exemple.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="flex-1 bg-[var(--bg-color)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] transition-colors"
@@ -243,11 +243,11 @@ const Newsletter = () => {
           disabled={status === 'loading'}
           className="bg-[#6B1A2A] text-white px-6 py-2 text-base hover:opacity-90 transition-colors disabled:opacity-50"
         >
-          {status === 'loading' ? '...' : 'Subscribe'}
+          {status === 'loading' ? '...' : "S'inscrire"}
         </button>
       </form>
-      {status === 'success' && <p className="text-sm text-green-500 mt-2">You're on the list.</p>}
-      {status === 'error' && <p className="text-sm text-red-500 mt-2">Something went wrong.</p>}
+      {status === 'success' && <p className="text-sm text-green-500 mt-2">Vous êtes inscrit.</p>}
+      {status === 'error' && <p className="text-sm text-red-500 mt-2">Une erreur est survenue.</p>}
     </section>
   );
 };
