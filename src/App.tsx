@@ -36,7 +36,7 @@ const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: 
   const [reflexionOpen, setReflexionOpen] = useState(false);
 
   const navItems = [
-    { name: 'Réflexion', path: 'reflexion', icon: Brain, hasSubmenu: true },
+    { name: 'Réflexions', path: 'reflexion', icon: Brain, hasSubmenu: true },
     { name: 'Vidéos', path: 'video', icon: FileText },
     { name: 'Notes de lecture', path: 'notes', icon: Book },
     { name: 'Library', path: 'library', icon: Library },
