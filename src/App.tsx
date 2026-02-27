@@ -36,9 +36,9 @@ const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: 
   const [reflexionOpen, setReflexionOpen] = useState(false);
 
   const navItems = [
-    { name: 'Vidéo', path: 'video', icon: FileText },
-    { name: 'Notes de lecture', path: 'notes', icon: Book },
     { name: 'Réflexion', path: 'reflexion', icon: Brain, hasSubmenu: true },
+    { name: 'Vidéos', path: 'video', icon: FileText },
+    { name: 'Notes de lecture', path: 'notes', icon: Book },
     { name: 'Library', path: 'library', icon: Library },
   ];
 
@@ -304,6 +304,7 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   const [videoPlaylist, setVideoPlaylist] = useState<string>('');
   const [videoPosts, setVideoPosts] = useState<Post[]>([]);
   const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Load video playlists on mount
   useEffect(() => {
@@ -317,13 +318,18 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   }, [type, posts]);
 
   const handlePlaylistSelect = (playlistName: string) => {
+    setLoading(true);
     setVideoPlaylist(playlistName);
     if (playlistName === 'all') {
       setVideoPosts(posts.filter(p => p.type === 'video'));
+      setLoading(false);
     } else {
       fetch(`/api/posts?type=video&playlist=${encodeURIComponent(playlistName)}`)
         .then(res => res.json())
-        .then(data => setVideoPosts(data));
+        .then(data => {
+          setVideoPosts(data);
+          setLoading(false);
+        });
     }
   };
 
@@ -342,49 +348,49 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
         </div>
         {/* Content */}
         <div className="max-w-[680px] mx-auto px-4 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {filteredPosts.length > 0 ? (
-            filteredPosts.map((post) => (
-              <article
-                key={post.id}
-                className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
-                onClick={() => onNavigate(`post/${post.slug}`)}
-              >
-                {post.coverImage ? (
-                  <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
-                ) : (
-                  <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
-                    <Book size={48} className="text-[var(--text-color)]/20" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => (
+                <article
+                  key={post.id}
+                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
+                  onClick={() => onNavigate(`post/${post.slug}`)}
+                >
+                  {post.coverImage ? (
+                    <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
+                  ) : (
+                    <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
+                      <Book size={48} className="text-[var(--text-color)]/20" />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2">
+                      {post.title}
+                    </h3>
+                    {post.description && (
+                      <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 mb-4">
+                        {post.description}
+                      </p>
+                    )}
+                    {post.downloadUrl && (
+                      <a
+                        href={post.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-2 text-sm text-[#6B1A2A] hover:underline"
+                      >
+                        <ArrowRight size={14} />
+                        Télécharger
+                      </a>
+                    )}
                   </div>
-                )}
-                <div className="p-6">
-                  <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2">
-                    {post.title}
-                  </h3>
-                  {post.description && (
-                    <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 mb-4">
-                      {post.description}
-                    </p>
-                  )}
-                  {post.downloadUrl && (
-                    <a
-                      href={post.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-2 text-sm text-[#6B1A2A] hover:underline"
-                    >
-                      <ArrowRight size={14} />
-                      Télécharger
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))
-          ) : (
-            <p className="text-[var(--text-color)]/40 font-light italic col-span-full">Nothing here yet.</p>
-          )}
-        </div>
+                </article>
+              ))
+            ) : (
+              <p className="text-[var(--text-color)]/40 font-light italic col-span-full">Nothing here yet.</p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -455,46 +461,46 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
 
         {/* Content */}
         <div className="max-w-[680px] mx-auto px-4 pb-20">
-        {videoPosts.length === 0 ? (
-          <p className="text-[var(--text-color)]/40 font-light italic text-center py-8">
-            Aucune vidéo dans cette playlist.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {videoPosts.map((post) => (
-              <article
-                key={post.id}
-                className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col"
-                onClick={() => onNavigate(`post/${post.slug}`)}
-              >
-                {post.coverImage ? (
-                  <div className="relative">
-                    <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                        <ArrowRight size={28} className="text-[#6B1A2A] ml-1" />
+          {videoPosts.length === 0 ? (
+            <p className="text-[var(--text-color)]/40 font-light italic text-center py-8">
+              Aucune vidéo dans cette playlist.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {videoPosts.map((post) => (
+                <article
+                  key={post.id}
+                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col"
+                  onClick={() => onNavigate(`post/${post.slug}`)}
+                >
+                  {post.coverImage ? (
+                    <div className="relative">
+                      <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
+                          <ArrowRight size={28} className="text-[#6B1A2A] ml-1" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
-                    <FileText size={48} className="text-[var(--text-color)]/20" />
-                  </div>
-                )}
-                <div className="p-6 flex-grow">
-                  <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-3 line-clamp-2 leading-snug">
-                    {post.title}
-                  </h3>
-                  {post.description && (
-                    <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 leading-relaxed">
-                      {post.description}
-                    </p>
+                  ) : (
+                    <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
+                      <FileText size={48} className="text-[var(--text-color)]/20" />
+                    </div>
                   )}
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+                  <div className="p-6 flex-grow">
+                    <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-3 line-clamp-2 leading-snug">
+                      {post.title}
+                    </h3>
+                    {post.description && (
+                      <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 leading-relaxed">
+                        {post.description}
+                      </p>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -510,20 +516,20 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
       </div>
       {/* Content */}
       <div className="max-w-[680px] mx-auto px-4 pb-20">
-      <div className="space-y-16">
-        {filteredPosts.length > 0 ? (
-          filteredPosts.map((post) => (
-            <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
-              <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
-              <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
-                {post.title}
-              </h3>
-            </article>
-          ))
-        ) : (
-          <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
-        )}
-      </div>
+        <div className="space-y-16">
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => (
+              <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
+                <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
+                <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
+                  {post.title}
+                </h3>
+              </article>
+            ))
+          ) : (
+            <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -880,9 +886,9 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
                 <div className={cn(
                   "p-2 rounded-md",
                   post.type === 'video' ? "bg-red-500/10 text-red-600" :
-                  post.type === 'note' ? "bg-blue-500/10 text-blue-600" :
-                  post.type === 'model' ? "bg-purple-500/10 text-purple-600" :
-                  "bg-green-500/10 text-green-600"
+                    post.type === 'note' ? "bg-blue-500/10 text-blue-600" :
+                      post.type === 'model' ? "bg-purple-500/10 text-purple-600" :
+                        "bg-green-500/10 text-green-600"
                 )}>
                   {getTypeIcon(post.type)}
                 </div>
