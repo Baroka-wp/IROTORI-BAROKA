@@ -1,19 +1,6 @@
 {
-  "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "functions": {
-    "api/*.ts": {
-      "maxDuration": 10
-    }
-  },
-  "rewrites": [
-    { "source": "/api/post", "destination": "/api/post" },
-    { "source": "/api/auth/:path*", "destination": "/api/auth/:path*" },
-    { "source": "/api/posts", "destination": "/api/posts" },
-    { "source": "/api/posts/:path*", "destination": "/api/posts/:path*" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "installCommand": "npm install"
 }
