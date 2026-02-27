@@ -17,15 +17,18 @@ model User {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  title     String
-  slug      String   @unique
-  type      String   // blog, model, ebook, note, quote
-  content   String
-  status    String   @default("draft") // draft, published
-  tags      String?  // Comma separated tags
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  type        String   // video, model, ebook, note
+  content     String
+  status      String   @default("draft") // draft, published
+  tags        String?  // Comma separated tags or subcategory for model
+  description String?  // Description pour les ebooks
+  coverImage  String?  // URL de l'image de couverture
+  downloadUrl String?  // Lien de telechargement (Google Drive)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Subscriber {

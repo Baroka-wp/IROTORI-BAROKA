@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  ChevronDown,
   Menu,
   X,
   ArrowRight,
@@ -23,12 +24,20 @@ import Editor from './components/Editor';
 
 const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: string, onToggleTheme: () => void, onNavigate: (page: string) => void }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [reflexionOpen, setReflexionOpen] = useState(false);
 
   const navItems = [
-    { name: 'Blog', path: 'blog', icon: FileText },
-    { name: 'Notes', path: 'notes', icon: Book },
-    { name: 'Transformation', path: 'transformation', icon: Brain },
+    { name: 'Vidéo', path: 'video', icon: FileText },
+    { name: 'Notes de lecture', path: 'notes', icon: Book },
+    { name: 'Réflexion', path: 'reflexion', icon: Brain, hasSubmenu: true },
     { name: 'Library', path: 'library', icon: Library },
+  ];
+
+  const reflexionSubItems = [
+    { name: 'Spiritualité', path: 'reflexion/spiritualite' },
+    { name: 'Entrepreneuriat', path: 'reflexion/entrepreneuriat' },
+    { name: 'Management', path: 'reflexion/management' },
+    { name: 'Éducation', path: 'reflexion/education' },
   ];
 
   return (
@@ -43,13 +52,45 @@ const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: 
 
         <div className="hidden md:flex items-center gap-6">
           {navItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => onNavigate(item.path)}
-              className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
-            >
-              {item.name}
-            </button>
+            item.hasSubmenu ? (
+              <div key={item.path} className="relative">
+                <button
+                  onClick={() => setReflexionOpen(!reflexionOpen)}
+                  className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors flex items-center gap-1"
+                >
+                  {item.name}
+                  <ChevronDown size={14} className={`transition-transform ${reflexionOpen ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {reflexionOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 mt-2 bg-[var(--bg-color)] border border-[var(--border-color)] py-2 min-w-[180px] shadow-lg"
+                    >
+                      {reflexionSubItems.map((sub) => (
+                        <button
+                          key={sub.path}
+                          onClick={() => { onNavigate(sub.path); setReflexionOpen(false); }}
+                          className="block w-full text-left px-4 py-2 text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] hover:bg-[var(--card-bg)] transition-colors"
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <button
+                key={item.path}
+                onClick={() => onNavigate(item.path)}
+                className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
+              >
+                {item.name}
+              </button>
+            )
           ))}
           <button
             onClick={onToggleTheme}
@@ -89,13 +130,38 @@ const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: 
             className="md:hidden bg-[var(--bg-color)] border-b border-[var(--border-color)] px-4 py-6 space-y-4"
           >
             {navItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => { onNavigate(item.path); setIsOpen(false); }}
-                className="block w-full text-left text-lg font-light text-[var(--text-color)]"
-              >
-                {item.name}
-              </button>
+              item.hasSubmenu ? (
+                <div key={item.path} className="space-y-2">
+                  <button
+                    onClick={() => setReflexionOpen(!reflexionOpen)}
+                    className="block w-full text-left text-lg font-light text-[var(--text-color)] flex items-center justify-between"
+                  >
+                    {item.name}
+                    <ChevronDown size={16} className={`transition-transform ${reflexionOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {reflexionOpen && (
+                    <div className="pl-4 space-y-2 border-l border-[var(--border-color)]">
+                      {reflexionSubItems.map((sub) => (
+                        <button
+                          key={sub.path}
+                          onClick={() => { onNavigate(sub.path); setIsOpen(false); }}
+                          className="block w-full text-left text-base font-light text-[var(--text-color)]/80 hover:text-[#6B1A2A]"
+                        >
+                          {sub.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  key={item.path}
+                  onClick={() => { onNavigate(item.path); setIsOpen(false); }}
+                  className="block w-full text-left text-lg font-light text-[var(--text-color)]"
+                >
+                  {item.name}
+                </button>
+              )
             ))}
             {user && (
               <button
@@ -229,6 +295,58 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   const filteredPosts = posts.filter(p => p.type === type || type === 'all');
   const displayTitle = title || (type === 'all' ? 'Archive' : type.charAt(0).toUpperCase() + type.slice(1));
 
+  // Library page with cover images and download links
+  if (type === 'ebook') {
+    return (
+      <div className="py-20">
+        <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {filteredPosts.length > 0 ? (
+            filteredPosts.map((post) => (
+              <article
+                key={post.id}
+                className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
+                onClick={() => onNavigate(`post/${post.slug}`)}
+              >
+                {post.coverImage ? (
+                  <img src={post.coverImage} alt={post.title} className="w-full h-64 object-cover" />
+                ) : (
+                  <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
+                    <Book size={48} className="text-[var(--text-color)]/20" />
+                  </div>
+                )}
+                <div className="p-6">
+                  <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2">
+                    {post.title}
+                  </h3>
+                  {post.description && (
+                    <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 mb-4">
+                      {post.description}
+                    </p>
+                  )}
+                  {post.downloadUrl && (
+                    <a
+                      href={post.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-2 text-sm text-[#6B1A2A] hover:underline"
+                    >
+                      <ArrowRight size={14} />
+                      Télécharger
+                    </a>
+                  )}
+                </div>
+              </article>
+            ))
+          ) : (
+            <p className="text-[var(--text-color)]/40 font-light italic col-span-full">Nothing here yet.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="py-20">
       <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
@@ -265,6 +383,54 @@ const PostPage = ({ slug }: { slug: string }) => {
 
   if (loading) return <div className="py-20 text-center font-light text-[var(--text-color)]/40">Reading...</div>;
   if (!post) return <div className="py-20 text-center font-light text-[var(--text-color)]/40">Not found.</div>;
+
+  // Ebook page with cover and download
+  if (post.type === 'ebook') {
+    return (
+      <article className="py-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16">
+          <div className="md:col-span-1">
+            {post.coverImage ? (
+              <img src={post.coverImage} alt={post.title} className="w-full rounded-lg shadow-lg" />
+            ) : (
+              <div className="w-full aspect-[3/4] bg-[var(--card-bg)] rounded-lg flex items-center justify-center">
+                <Book size={64} className="text-[var(--text-color)]/20" />
+              </div>
+            )}
+          </div>
+          <div className="md:col-span-2">
+            <p className="text-sm text-[var(--text-color)]/40 font-light mb-4 uppercase tracking-widest">
+              {formatDate(post.createdAt)} • Ebook
+            </p>
+            <h1 className="text-4xl md:text-5xl font-light leading-tight mb-6 text-[#6B1A2A]">
+              {post.title}
+            </h1>
+            {post.description && (
+              <p className="text-lg text-[var(--text-color)]/80 leading-relaxed mb-8">
+                {post.description}
+              </p>
+            )}
+            {post.downloadUrl && (
+              <a
+                href={post.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-[#6B1A2A] text-white px-8 py-3 text-base hover:opacity-90 transition-opacity rounded-lg"
+              >
+                <ArrowRight size={18} />
+                Télécharger
+              </a>
+            )}
+          </div>
+        </div>
+        {post.content && (
+          <div className="prose max-w-none font-light leading-relaxed text-xl">
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          </div>
+        )}
+      </article>
+    );
+  }
 
   return (
     <article className="py-20">
@@ -342,10 +508,13 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
 
 const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNavigate: (p: string) => void, onRefresh: () => void }) => {
   const [title, setTitle] = useState('');
-  const [type, setType] = useState<string>('blog');
+  const [type, setType] = useState<string>('video');
   const [content, setContent] = useState('');
   const [status, setStatus] = useState('draft');
   const [tags, setTags] = useState('');
+  const [description, setDescription] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const [downloadUrl, setDownloadUrl] = useState('');
   const [loading, setLoading] = useState(!!slug);
   const [saving, setSaving] = useState(false);
 
@@ -359,6 +528,9 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
           setContent(data.content);
           setStatus(data.status);
           setTags(data.tags || '');
+          setDescription(data.description || '');
+          setCoverImage(data.coverImage || '');
+          setDownloadUrl(data.downloadUrl || '');
           setLoading(false);
         });
     }
@@ -368,7 +540,24 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
     e.preventDefault();
     setSaving(true);
     const slugified = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    const data = { title, slug: slugified, type, content, status, tags };
+    const data: any = {
+      title,
+      slug: slugified,
+      type,
+      content,
+      status,
+    };
+
+    // Add fields based on type
+    if (type === 'model') {
+      data.tags = tags;
+    } else if (type === 'ebook') {
+      data.description = description;
+      data.coverImage = coverImage;
+      data.downloadUrl = downloadUrl;
+    } else {
+      data.tags = tags;
+    }
 
     const url = slug ? `/api/posts/${slug}` : '/api/posts';
     const method = slug ? 'PUT' : 'POST';
@@ -382,6 +571,7 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
 
       if (!res.ok) {
         const error = await res.json();
+        console.error('API Error:', error);
         alert('Error: ' + (error.error || 'Failed to save'));
         setSaving(false);
         return;
@@ -390,6 +580,7 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
       onRefresh();
       onNavigate('admin');
     } catch (err) {
+      console.error('Submit Error:', err);
       alert('Error: ' + (err as Error).message);
       setSaving(false);
     }
@@ -414,17 +605,16 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
 
         <div className="grid grid-cols-2 gap-8">
           <div className="space-y-2">
-            <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Type</label>
+            <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Category</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
               className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
             >
-              <option value="blog">Blog Post</option>
-              <option value="note">Note</option>
-              <option value="model">Mental Model</option>
+              <option value="video">Vidéo</option>
+              <option value="note">Note de lecture</option>
+              <option value="model">Réflexion</option>
               <option value="ebook">Ebook</option>
-              <option value="quote">Quote</option>
             </select>
           </div>
           <div className="space-y-2">
@@ -440,15 +630,71 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Tags (comma separated)</label>
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
-          />
-        </div>
+        {type === 'model' && (
+          <div className="space-y-2">
+            <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Sous-catégorie</label>
+            <select
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+            >
+              <option value="">Sélectionner...</option>
+              <option value="spiritualite">Spiritualité</option>
+              <option value="entrepreneuriat">Entrepreneuriat</option>
+              <option value="management">Management</option>
+              <option value="education">Éducation</option>
+            </select>
+          </div>
+        )}
+
+        {type !== 'model' && (
+          <div className="space-y-2">
+            <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Tags (comma separated)</label>
+            <input
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+            />
+          </div>
+        )}
+
+        {type === 'ebook' && (
+          <>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none resize-none"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Cover Image URL</label>
+              <input
+                type="url"
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+                placeholder="https://..."
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+              />
+              {coverImage && (
+                <img src={coverImage} alt="Preview" className="mt-2 max-w-[200px] rounded" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Download Link (Google Drive)</label>
+              <input
+                type="url"
+                value={downloadUrl}
+                onChange={(e) => setDownloadUrl(e.target.value)}
+                placeholder="https://drive.google.com/..."
+                className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-2 text-base text-[var(--text-color)] focus:outline-none"
+              />
+            </div>
+          </>
+        )}
 
         <div className="space-y-2">
           <label className="text-sm uppercase tracking-widest text-[var(--text-color)]/40">Content</label>
@@ -529,12 +775,16 @@ export default function App() {
     if (path === '/admin/new') return 'admin/new';
     if (path.startsWith('/admin/edit/')) return `admin/edit/${path.split('/')[3]}`;
     if (path.startsWith('/post/')) return `post/${path.split('/')[2]}`;
-    if (path === '/blog') return 'blog';
+    if (path === '/video') return 'video';
     if (path === '/notes') return 'notes';
-    if (path === '/transformation') return 'transformation';
+    if (path === '/reflexion') return 'reflexion';
+    if (path === '/reflexion/spiritualite') return 'reflexion/spiritualite';
+    if (path === '/reflexion/entrepreneuriat') return 'reflexion/entrepreneuriat';
+    if (path === '/reflexion/management') return 'reflexion/management';
+    if (path === '/reflexion/education') return 'reflexion/education';
     if (path === '/library') return 'library';
     // Handle short URLs like /transformation, /mon-article, etc.
-    if (path.length > 1 && !path.startsWith('/admin') && !path.startsWith('/post/')) {
+    if (path.length > 1 && !path.startsWith('/admin') && !path.startsWith('/post/') && !path.startsWith('/reflexion/')) {
       return `post/${path.slice(1)}`;
     }
     return 'home';
@@ -571,9 +821,13 @@ export default function App() {
   useEffect(() => {
     const pathMap: Record<string, string> = {
       'home': '/',
-      'blog': '/blog',
+      'video': '/video',
       'notes': '/notes',
-      'transformation': '/transformation',
+      'reflexion': '/reflexion',
+      'reflexion/spiritualite': '/reflexion/spiritualite',
+      'reflexion/entrepreneuriat': '/reflexion/entrepreneuriat',
+      'reflexion/management': '/reflexion/management',
+      'reflexion/education': '/reflexion/education',
       'library': '/library',
       'admin': '/admin',
       'admin/new': '/admin/new',
@@ -604,10 +858,14 @@ export default function App() {
 
   const renderPage = () => {
     if (currentPage === 'home') return <HomePage onNavigate={setCurrentPage} posts={posts.filter(p => p.status === 'published')} />;
-    if (currentPage === 'blog') return <ContentListPage type="blog" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
-    if (currentPage === 'notes') return <ContentListPage type="note" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
-    if (currentPage === 'transformation') return <ContentListPage type="model" title="Transformation" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
-    if (currentPage === 'library') return <ContentListPage type="ebook" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+    if (currentPage === 'video') return <ContentListPage type="video" title="Vidéo" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+    if (currentPage === 'notes') return <ContentListPage type="note" title="Notes de lecture" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+    if (currentPage === 'reflexion') return <ContentListPage type="model" title="Réflexion" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+    if (currentPage === 'reflexion/spiritualite') return <ContentListPage type="model" title="Spiritualité" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('spiritualite'))} onNavigate={setCurrentPage} />;
+    if (currentPage === 'reflexion/entrepreneuriat') return <ContentListPage type="model" title="Entrepreneuriat" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('entrepreneuriat'))} onNavigate={setCurrentPage} />;
+    if (currentPage === 'reflexion/management') return <ContentListPage type="model" title="Management" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('management'))} onNavigate={setCurrentPage} />;
+    if (currentPage === 'reflexion/education') return <ContentListPage type="model" title="Éducation" posts={posts.filter(p => p.status === 'published' && p.tags?.includes('education'))} onNavigate={setCurrentPage} />;
+    if (currentPage === 'library') return <ContentListPage type="ebook" title="Library" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
 
     if (currentPage.startsWith('post/')) {
       const slug = currentPage.split('/')[1];
