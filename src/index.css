@@ -1,0 +1,38 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-brand: #6B1A2A;
+  --color-bg-dark: #0A0E1A;
+}
+
+@layer base {
+  body {
+    @apply antialiased bg-[#0A0E1A] text-[#FDFCFB];
+  }
+}
+
+.prose h1, .prose h2, .prose h3 {
+  @apply text-[#6B1A2A] font-light mt-12 mb-6;
+}
+
+.prose p {
+  @apply mb-6 leading-relaxed text-[#FDFCFB]/80;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-6 text-[#FDFCFB]/80;
+}
+
+.prose img {
+  @apply my-12 border border-white/5;
+}
+
+.prose blockquote {
+  @apply border-l-2 border-[#6B1A2A] pl-6 italic text-[#FDFCFB]/60 my-8;
+}
+
+.prose a {
+  @apply text-[#6B1A2A] hover:underline transition-all;
+}
