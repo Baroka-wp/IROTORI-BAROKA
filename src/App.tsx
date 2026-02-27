@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Book, 
-  Brain, 
-  FileText, 
-  Library, 
-  Quote, 
-  Plus, 
-  Settings, 
-  LogOut, 
+import {
+  Book,
+  Brain,
+  FileText,
+  Library,
+  Quote,
+  Plus,
+  Settings,
+  LogOut,
   ChevronRight,
   Menu,
   X,
@@ -27,14 +27,14 @@ const Navbar = ({ user, theme, onToggleTheme, onNavigate }: { user: any, theme: 
   const navItems = [
     { name: 'Blog', path: 'blog', icon: FileText },
     { name: 'Notes', path: 'notes', icon: Book },
-    { name: 'Models', path: 'models', icon: Brain },
+    { name: 'Transformation', path: 'transformation', icon: Brain },
     { name: 'Library', path: 'library', icon: Library },
   ];
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-color)]/80 backdrop-blur-md border-b border-[var(--border-color)]">
       <div className="max-w-[680px] mx-auto px-4 h-16 flex items-center justify-between">
-        <button 
+        <button
           onClick={() => onNavigate('home')}
           className="text-[#6B1A2A] font-medium text-xl tracking-tight hover:opacity-80 transition-opacity"
         >
@@ -182,27 +182,27 @@ const Newsletter = () => {
 const HomePage = ({ onNavigate, posts }: { onNavigate: (p: string) => void, posts: Post[] }) => (
   <div className="space-y-20">
     <header className="py-20">
-      <motion.h1 
+      <motion.h1
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-5xl md:text-6xl font-light tracking-tight leading-tight text-[#6B1A2A]"
       >
         A window into my mind.
       </motion.h1>
-      <motion.p 
+      <motion.p
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="text-xl text-[var(--text-color)]/60 font-light mt-6 max-w-[500px] leading-relaxed"
       >
-        Exploring mental models, philosophy, and the intersection of technology and humanity.
+        Exploring mental s, philosophy, and the intersection of technology and humanity.
       </motion.p>
     </header>
 
     <section>
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-sm uppercase tracking-[0.2em] text-[var(--text-color)]/40 font-medium">Latest Thinking</h2>
-        <button 
+        <button
           onClick={() => onNavigate('blog')}
           className="text-sm font-medium text-[#6B1A2A] hover:underline flex items-center gap-1"
         >
@@ -225,13 +225,13 @@ const HomePage = ({ onNavigate, posts }: { onNavigate: (p: string) => void, post
   </div>
 );
 
-const ContentListPage = ({ type, posts, onNavigate }: { type: string, posts: Post[], onNavigate: (p: string) => void }) => {
+const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, title?: string, posts: Post[], onNavigate: (p: string) => void }) => {
   const filteredPosts = posts.filter(p => p.type === type || type === 'all');
-  const title = type === 'all' ? 'Archive' : type.charAt(0).toUpperCase() + type.slice(1);
+  const displayTitle = title || (type === 'all' ? 'Archive' : type.charAt(0).toUpperCase() + type.slice(1));
 
   return (
     <div className="py-20">
-      <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{title}</h1>
+      <h1 className="text-5xl font-light mb-16 text-[#6B1A2A]">{displayTitle}</h1>
       <div className="space-y-16">
         {filteredPosts.length > 0 ? (
           filteredPosts.map((post) => (
@@ -304,7 +304,7 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
     <div className="py-20">
       <div className="flex items-center justify-between mb-16">
         <h1 className="text-4xl font-light text-[#6B1A2A]">Dashboard</h1>
-        <button 
+        <button
           onClick={() => onNavigate('admin/new')}
           className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
         >
@@ -320,13 +320,13 @@ const AdminDashboard = ({ onNavigate, posts, onRefresh }: { onNavigate: (p: stri
               <p className="text-sm text-[var(--text-color)]/40 font-light">{post.type} • {post.status} • {formatDate(post.createdAt)}</p>
             </div>
             <div className="flex gap-4">
-              <button 
+              <button
                 onClick={() => onNavigate(`admin/edit/${post.slug}`)}
                 className="text-sm text-[#6B1A2A] hover:underline"
               >
                 Edit
               </button>
-              <button 
+              <button
                 onClick={() => handleDelete(post.id)}
                 className="text-sm text-red-500/60 hover:text-red-500"
               >
@@ -347,6 +347,7 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
   const [status, setStatus] = useState('draft');
   const [tags, setTags] = useState('');
   const [loading, setLoading] = useState(!!slug);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -365,21 +366,32 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
     const slugified = title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     const data = { title, slug: slugified, type, content, status, tags };
-    
+
     const url = slug ? `/api/posts/${slug}` : '/api/posts';
     const method = slug ? 'PUT' : 'POST';
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-    if (res.ok) {
+      if (!res.ok) {
+        const error = await res.json();
+        alert('Error: ' + (error.error || 'Failed to save'));
+        setSaving(false);
+        return;
+      }
+
       onRefresh();
       onNavigate('admin');
+    } catch (err) {
+      alert('Error: ' + (err as Error).message);
+      setSaving(false);
     }
   };
 
@@ -444,18 +456,20 @@ const AdminEditorPage = ({ slug, onNavigate, onRefresh }: { slug?: string, onNav
         </div>
 
         <div className="flex justify-end gap-4">
-          <button 
+          <button
             type="button"
             onClick={() => onNavigate('admin')}
             className="px-6 py-2 text-base font-light text-[var(--text-color)] hover:underline"
+            disabled={saving}
           >
             Cancel
           </button>
-          <button 
+          <button
             type="submit"
-            className="bg-[#6B1A2A] text-white px-8 py-2 text-base hover:opacity-90 transition-colors"
+            className="bg-[#6B1A2A] text-white px-8 py-2 text-base hover:opacity-90 transition-colors disabled:opacity-50"
+            disabled={saving}
           >
-            Save Content
+            {saving ? 'Saving...' : 'Save Content'}
           </button>
         </div>
       </form>
@@ -509,7 +523,22 @@ const LoginPage = ({ onLogin }: { onLogin: () => void }) => {
 // --- Main App ---
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(() => {
+    const path = window.location.pathname;
+    if (path === '/admin') return 'admin';
+    if (path === '/admin/new') return 'admin/new';
+    if (path.startsWith('/admin/edit/')) return `admin/edit/${path.split('/')[3]}`;
+    if (path.startsWith('/post/')) return `post/${path.split('/')[2]}`;
+    if (path === '/blog') return 'blog';
+    if (path === '/notes') return 'notes';
+    if (path === '/transformation') return 'transformation';
+    if (path === '/library') return 'library';
+    // Handle short URLs like /transformation, /mon-article, etc.
+    if (path.length > 1 && !path.startsWith('/admin') && !path.startsWith('/post/')) {
+      return `post/${path.slice(1)}`;
+    }
+    return 'home';
+  });
   const [user, setUser] = useState<any>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -538,6 +567,33 @@ export default function App() {
     setLoading(false);
   }, []);
 
+  // Sync URL with currentPage
+  useEffect(() => {
+    const pathMap: Record<string, string> = {
+      'home': '/',
+      'blog': '/blog',
+      'notes': '/notes',
+      'transformation': '/transformation',
+      'library': '/library',
+      'admin': '/admin',
+      'admin/new': '/admin/new',
+    };
+    let newPath = pathMap[currentPage];
+    if (!newPath) {
+      if (currentPage.startsWith('post/')) {
+        const slug = currentPage.split('/')[1];
+        // Use short URL format: /transformation instead of /post/transformation
+        newPath = `/${slug}`;
+      } else if (currentPage.startsWith('admin/edit/')) {
+        const slug = currentPage.split('/')[2];
+        newPath = `/admin/edit/${slug}`;
+      }
+    }
+    if (newPath && window.location.pathname !== newPath) {
+      window.history.pushState({}, '', newPath);
+    }
+  }, [currentPage]);
+
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
@@ -550,9 +606,9 @@ export default function App() {
     if (currentPage === 'home') return <HomePage onNavigate={setCurrentPage} posts={posts.filter(p => p.status === 'published')} />;
     if (currentPage === 'blog') return <ContentListPage type="blog" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     if (currentPage === 'notes') return <ContentListPage type="note" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
-    if (currentPage === 'models') return <ContentListPage type="model" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+    if (currentPage === 'transformation') return <ContentListPage type="model" title="Transformation" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     if (currentPage === 'library') return <ContentListPage type="ebook" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
-    
+
     if (currentPage.startsWith('post/')) {
       const slug = currentPage.split('/')[1];
       return <PostPage slug={slug} />;
@@ -582,7 +638,7 @@ export default function App() {
   return (
     <div className="min-h-screen font-sans selection:bg-[#6B1A2A]/20 selection:text-[#6B1A2A] transition-colors duration-300">
       <Navbar user={user} theme={theme} onToggleTheme={toggleTheme} onNavigate={setCurrentPage} />
-      
+
       <main className="max-w-[680px] mx-auto px-4 min-h-[calc(100vh-200px)]">
         <AnimatePresence mode="wait">
           <motion.div

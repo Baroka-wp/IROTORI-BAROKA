@@ -96,10 +96,10 @@ async function startServer() {
     }
   });
 
-  app.put("/api/posts/:id", authenticate, async (req, res) => {
+  app.put("/api/posts/:slug", authenticate, async (req, res) => {
     try {
       const post = await prisma.post.update({
-        where: { id: req.params.id },
+        where: { slug: req.params.slug },
         data: req.body,
       });
       res.json(post);
