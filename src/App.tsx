@@ -276,16 +276,16 @@ const HomePage = ({ onNavigate, posts }: { onNavigate: (p: string) => void, post
 
     <section>
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-sm uppercase tracking-[0.2em] text-[var(--text-color)]/40 font-medium">Latest Thinking</h2>
+        <h2 className="text-sm uppercase tracking-[0.2em] text-[var(--text-color)]/40 font-medium">Dernières réflexions</h2>
         <button
-          onClick={() => onNavigate('blog')}
+          onClick={() => onNavigate('reflexion')}
           className="text-sm font-medium text-[#6B1A2A] hover:underline flex items-center gap-1"
         >
-          View all <ArrowRight size={14} />
+          Voir plus <ArrowRight size={14} />
         </button>
       </div>
       <div className="space-y-12">
-        {posts.slice(0, 3).map((post) => (
+        {posts.filter(p => p.type === 'model').slice(0, 3).map((post) => (
           <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
             <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)} — {post.type}</p>
             <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
@@ -305,6 +305,7 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
   const [videoPosts, setVideoPosts] = useState<Post[]>([]);
   const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
 
   // Load video playlists on mount
   useEffect(() => {
@@ -335,6 +336,20 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
 
   const filteredPosts = posts.filter(p => p.type === type || type === 'all');
   const displayTitle = title || (type === 'all' ? 'Archive' : type.charAt(0).toUpperCase() + type.slice(1));
+
+  // Subcategories for Reflexion
+  const subcategories = [
+    { id: 'all', name: 'Toutes' },
+    { id: 'spiritualite', name: 'Spiritualité' },
+    { id: 'entrepreneurial', name: 'Entrepreneurial/MindSet' },
+    { id: 'management', name: 'Management' },
+    { id: 'education', name: 'Éducation' },
+  ];
+
+  // Filter posts by subcategory for Reflexion page
+  const postsBySubcategory = type === 'model' && selectedSubcategory !== 'all'
+    ? posts.filter(p => p.type === 'model' && p.tags?.includes(selectedSubcategory))
+    : posts.filter(p => p.type === 'model');
 
   // Library page with cover images and download links
   if (type === 'ebook') {
@@ -511,13 +526,45 @@ const ContentListPage = ({ type, title, posts, onNavigate }: { type: string, tit
       {/* Banner */}
       <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
         <div className="max-w-[680px] mx-auto px-4">
-          <h1 className="text-base md:text-lg font-normal text-[#6B1A2A]">{displayTitle}</h1>
+          <h1 className="text-base md:text-lg font-normal text-[#6B1A2A] mb-4">{displayTitle}</h1>
+
+          {/* Subcategory filters for Reflexion */}
+          {type === 'model' && (
+            <div className="flex flex-wrap gap-2">
+              {subcategories.map((sub) => (
+                <button
+                  key={sub.id}
+                  onClick={() => setSelectedSubcategory(sub.id)}
+                  className={`px-4 py-1.5 text-sm rounded-full transition-colors ${
+                    selectedSubcategory === sub.id
+                      ? 'bg-[#6B1A2A] text-white'
+                      : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A] border border-[var(--border-color)]'
+                  }`}
+                >
+                  {sub.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {/* Content */}
       <div className="max-w-[680px] mx-auto px-4 pb-20">
         <div className="space-y-16">
-          {filteredPosts.length > 0 ? (
+          {type === 'model' ? (
+            postsBySubcategory.length > 0 ? (
+              postsBySubcategory.map((post) => (
+                <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
+                  <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
+                  <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
+                    {post.title}
+                  </h3>
+                </article>
+              ))
+            ) : (
+              <p className="text-[var(--text-color)]/40 font-light italic">Aucune réflexion dans cette catégorie.</p>
+            )
+          ) : filteredPosts.length > 0 ? (
             filteredPosts.map((post) => (
               <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
                 <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
