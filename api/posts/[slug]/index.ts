@@ -1,9 +1,29 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
-import { parseCookies } from '../../lib/cookies';
 import { prisma } from '../../lib/prisma';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
+
+// Parse cookies from request header
+function parseCookies(req: VercelRequest): Record<string, string> {
+  const cookieHeader = req.headers.cookie;
+  const cookies: Record<string, string> = {};
+
+  if (!cookieHeader) {
+    return cookies;
+  }
+
+  cookieHeader.split(';').forEach(cookie => {
+    const parts = cookie.split('=');
+    if (parts.length >= 2) {
+      const name = decodeURIComponent(parts.shift()!.trim());
+      const value = decodeURIComponent(parts.join('=').trim());
+      cookies[name] = value;
+    }
+  });
+
+  return cookies;
+}
 
 // Middleware d'authentification
 const authenticate = (req: VercelRequest): boolean => {
