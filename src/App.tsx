@@ -603,20 +603,49 @@ const PostPage = ({ slug, onNavigate }: { slug: string, onNavigate?: (p: string)
   if (post.type === 'video') {
     const getVideoEmbed = (url: string) => {
       if (!url) return null;
-      // YouTube - multiple formats
-      const youtubeMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-      if (youtubeMatch) {
-        return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=1&rel=0`;
+
+      // YouTube - Short URL (youtu.be/VIDEO_ID)
+      const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+      if (shortMatch) {
+        return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&rel=0`;
       }
+
+      // YouTube - Standard URL (youtube.com/watch?v=VIDEO_ID)
+      const watchMatch = url.match(/[?&]v=([^?&]+)/);
+      if (watchMatch) {
+        return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&rel=0`;
+      }
+
+      // YouTube - Live URL (youtube.com/live/VIDEO_ID)
+      const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/);
+      if (liveMatch) {
+        return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1&rel=0`;
+      }
+
+      // YouTube - Embed URL (youtube.com/embed/VIDEO_ID)
+      const embedMatch = url.match(/youtube\.com\/embed\/([^?&]+)/);
+      if (embedMatch) {
+        return url.includes('?') ? `${url}&autoplay=1&rel=0` : `${url}?autoplay=1&rel=0`;
+      }
+
+      // YouTube - Shorts URL (youtube.com/shorts/VIDEO_ID)
+      const shortsMatch = url.match(/youtube\.com\/shorts\/([^?&]+)/);
+      if (shortsMatch) {
+        return `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&rel=0`;
+      }
+
+      // YouTube - Channel URL with video (youtube.com/v/VIDEO_ID)
+      const vMatch = url.match(/youtube\.com\/v\/([^?&]+)/);
+      if (vMatch) {
+        return `https://www.youtube.com/embed/${vMatch[1]}?autoplay=1&rel=0`;
+      }
+
       // Google Drive (preview)
       if (url.includes('drive.google.com')) {
         const fileId = url.split('/d/')[1]?.split('/')[0];
         if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
       }
-      // If it's already a YouTube embed URL, use it directly
-      if (url.includes('youtube.com/embed/')) {
-        return url + '?autoplay=1&rel=0';
-      }
+
       return null;
     };
 

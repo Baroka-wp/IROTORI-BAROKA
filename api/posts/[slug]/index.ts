@@ -1,9 +1,8 @@
-import { PrismaClient } from '@prisma/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import jwt from 'jsonwebtoken';
 import { parseCookies } from '../../lib/cookies';
+import { prisma } from '../../lib/prisma';
 
-const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
 // Middleware d'authentification
