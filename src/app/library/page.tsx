@@ -11,13 +11,16 @@ import { Ebook } from '@/lib/utils';
 export default function LibraryPage() {
   const router = useRouter();
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
+  const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     const fetchEbooks = async () => {
+      setLoading(true);
       const res = await fetch('/api/ebooks?status=published');
       const data = await res.json();
       setEbooks(data.data || []);
+      setLoading(false);
     };
     fetchEbooks();
 
@@ -42,6 +45,17 @@ export default function LibraryPage() {
       router.push(`/${page}`);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-[#6B1A2A] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-[var(--text-color)]/40">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

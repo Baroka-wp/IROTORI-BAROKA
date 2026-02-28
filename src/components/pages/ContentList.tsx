@@ -36,6 +36,12 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
     }
   }, [type, items]);
 
+  // Get video count for a specific playlist
+  const getVideoCountForPlaylist = (playlistName: string) => {
+    const videoItems = items as Video[];
+    return videoItems.filter(v => v.playlist === playlistName).length;
+  };
+
   const handlePlaylistSelect = (playlistName: string) => {
     setLoading(true);
     setVideoPlaylist(playlistName);
@@ -208,7 +214,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                       <ArrowRight size={24} className="text-[var(--text-color)]/40 group-hover:text-[#6B1A2A] transition-colors" />
                     </div>
                     <p className="text-sm text-[var(--text-color)]/40 mt-4">
-                      {items.length} vidéo(s)
+                      {getVideoCountForPlaylist(playlistName)} vidéo(s)
                     </p>
                   </motion.button>
                 ))
