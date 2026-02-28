@@ -16,9 +16,9 @@ interface NavbarProps {
 
 const navItems: NavItem[] = [
   { name: 'Réflexions', path: 'reflexion' },
-  { name: 'Vidéos', path: 'video' },
-  { name: 'Notes de lecture', path: 'notes' },
-  { name: 'Library', path: 'library' },
+  { name: 'Webinaire', path: 'video' },
+  { name: 'Livres', path: 'library' },
+  { name: 'Projets', path: 'projets' },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNavigate }) => {

@@ -52,7 +52,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
     }
   };
 
-  const displayTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
+  const displayTitle = title || (type === 'video' ? 'Webinaire' : type.charAt(0).toUpperCase() + type.slice(1));
 
   // Filter by subcategory for reflexion page
   const reflexionItems = type === 'reflexion' ? items as Reflexion[] : [];
@@ -184,7 +184,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                   {displayTitle}
                 </h1>
                 <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
-                  Quelle catégorie vous intéresse ?
+                  Des webinaires sur des sujets divers <br /> (Ingenierie web | IA | Technologie | spirituels )
                 </p>
               </motion.div>
             </div>
@@ -277,16 +277,16 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                 >
                   {video.thumbnail ? (
                     <div className="relative w-full">
-                      <img src={video.thumbnail} alt={video.title} className="w-full h-auto object-cover" />
+                      <img src={video.thumbnail} alt={video.title} className="w-full h-auto object-contain bg-black" />
                       <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center">
-                          <PlayCircle size={48} className="text-[#6B1A2A]" />
+                        <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center">
+                          <PlayCircle size={64} className="text-[#6B1A2A]" />
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full bg-[var(--bg-color)] flex items-center justify-center py-20">
-                      <PlayCircle size={64} className="text-[var(--text-color)]/20" />
+                    <div className="w-full bg-[var(--bg-color)] flex items-center justify-center py-32">
+                      <PlayCircle size={96} className="text-[var(--text-color)]/20" />
                     </div>
                   )}
                   <div className="p-6 flex-grow">
@@ -410,11 +410,10 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
             <button
               key={sub.id}
               onClick={() => setSelectedSubcategory(sub.id)}
-              className={`px-6 py-3 text-sm rounded-full transition-colors ${
-                selectedSubcategory === sub.id
-                  ? 'bg-[#6B1A2A] text-white'
-                  : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A] border border-[var(--border-color)]'
-              }`}
+              className={`px-6 py-3 text-sm rounded-full transition-colors ${selectedSubcategory === sub.id
+                ? 'bg-[#6B1A2A] text-white'
+                : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A] border border-[var(--border-color)]'
+                }`}
             >
               {sub.name}
             </button>

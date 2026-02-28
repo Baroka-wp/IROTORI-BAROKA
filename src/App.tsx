@@ -112,17 +112,59 @@ export default function App() {
 
     // Video page
     if (currentPage === 'video') {
-      return <ContentListPage type="video" title="Vidéos" items={videos} onNavigate={navigate} />;
+      return <ContentListPage type="video" title="Webinaire" items={videos} onNavigate={navigate} />;
     }
 
-    // Notes page
+    // Library page (Livres)
+    if (currentPage === 'library') {
+      return <ContentListPage type="library" title="Livres" items={ebooks} onNavigate={navigate} />;
+    }
+
+    // Projets page (placeholder)
+    if (currentPage === 'projets') {
+      return (
+        <div className="space-y-32 pb-32">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.5 }}
+            className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
+          >
+            <img
+              src="https://res.cloudinary.com/baroka/image/upload/v1772310408/dlxmedia-hu-ZrtsGzVW2vk-unsplash_wcmdrv.jpg"
+              alt="Projets"
+              className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="space-y-6 max-w-4xl"
+              >
+                <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white whitespace-nowrap">
+                  Projets
+                </h1>
+                <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
+                  Ce sur quoi je travaille actuellement
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+          <div className="max-w-[680px] mx-auto px-4 pb-32">
+            <p className="text-center text-[var(--text-color)]/60 text-lg">
+              Cette page est en cours de construction.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Notes page (kept for backward compatibility)
     if (currentPage === 'notes') {
       return <ContentListPage type="notes" title="Notes de lecture" items={notes} onNavigate={navigate} />;
-    }
-
-    // Library page
-    if (currentPage === 'library') {
-      return <ContentListPage type="library" title="Library" items={ebooks} onNavigate={navigate} />;
     }
 
     // Single post page
