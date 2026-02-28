@@ -58,24 +58,29 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/ebooks/:slug - Update ebook (auth required)
-export async function PUT(request: NextRequest, context: any) {
+// PUT /api/ebooks - Update ebook (auth required)
+export async function PUT(request: NextRequest) {
   if (!(await authenticate())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const { slug } = await context.params;
     const body = await request.json();
-    const data = {
-      ...body,
+    const { slug, ...data } = body;
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+    }
+
+    const updateData = {
+      ...data,
       updatedAt: new Date(),
-      publishedAt: body.status === 'published' ? new Date() : undefined,
+      publishedAt: data.status === 'published' ? new Date() : undefined,
     };
 
     const ebook = await prisma.ebook.update({
       where: { slug },
-      data,
+      data: updateData,
     });
 
     return NextResponse.json(ebook);

@@ -79,23 +79,42 @@ export default function AdminDashboard() {
   };
 
   const handleSave = async (data: any) => {
-    const endpoint = `/api/${editorType}s${editingSlug ? `/${editingSlug}` : ''}`;
-    const method = editingSlug ? 'PUT' : 'POST';
+    if (editingSlug) {
+      // Update: send slug in body and use PUT
+      const endpoint = `/api/${editorType}s`;
+      const res = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, slug: editingSlug }),
+      });
 
-    const res = await fetch(endpoint, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (res.ok) {
-      setEditorOpen(false);
-      setEditingSlug(undefined);
-      setEditingData(null);
-      fetchContent();
+      if (res.ok) {
+        setEditorOpen(false);
+        setEditingSlug(undefined);
+        setEditingData(null);
+        fetchContent();
+      } else {
+        const error = await res.json();
+        alert(`Erreur: ${error.error || 'Erreur inconnue'}`);
+      }
     } else {
-      const error = await res.json();
-      alert(`Erreur: ${error.error || 'Erreur inconnue'}`);
+      // Create: POST
+      const endpoint = `/api/${editorType}s`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        setEditorOpen(false);
+        setEditingSlug(undefined);
+        setEditingData(null);
+        fetchContent();
+      } else {
+        const error = await res.json();
+        alert(`Erreur: ${error.error || 'Erreur inconnue'}`);
+      }
     }
   };
 

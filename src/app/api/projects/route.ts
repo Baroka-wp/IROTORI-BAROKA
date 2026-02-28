@@ -57,23 +57,28 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/projects/:slug - Update project (auth required)
-export async function PUT(request: NextRequest, context: any) {
+// PUT /api/projects - Update project (auth required)
+export async function PUT(request: NextRequest) {
   if (!(await authenticate())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const { slug } = await context.params;
     const body = await request.json();
-    const data = {
-      ...body,
+    const { slug, ...data } = body;
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+    }
+
+    const updateData = {
+      ...data,
       updatedAt: new Date(),
     };
 
     const project = await prisma.project.update({
       where: { slug },
-      data,
+      data: updateData,
     });
 
     return NextResponse.json(project);

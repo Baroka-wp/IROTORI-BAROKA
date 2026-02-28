@@ -101,13 +101,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isOpe
               {userEmail}
             </div>
           )}
-          <button
-            onClick={() => onNavigate('home')}
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[var(--text-color)]/70 hover:bg-[var(--card-bg)] rounded-lg transition-colors"
           >
             <Home size={18} />
             Voir le site
-          </button>
+          </a>
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"

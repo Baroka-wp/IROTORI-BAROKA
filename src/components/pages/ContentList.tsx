@@ -167,7 +167,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
             className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
           >
             <img
-              src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=1920&h=1080"
+              src="https://res.cloudinary.com/baroka/image/upload/v1772315789/austin-distel-VCFxt2yT1eQ-unsplash_jkhvxq.jpg"
               alt="Vidéos"
               className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
               referrerPolicy="no-referrer"
