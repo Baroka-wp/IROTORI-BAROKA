@@ -47,14 +47,9 @@ export default function App() {
   const renderPage = () => {
     if (currentPage === 'home') return <HomePage onNavigate={setCurrentPage} />;
 
-    // Reflexion pages with subcategories
+    // Reflexion page with subcategories
     if (currentPage === 'reflexion') {
-      return <ContentListPage type="model" title="Réflexions" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
-    }
-    if (currentPage.startsWith('reflexion/')) {
-      const subcategory = currentPage.split('/')[1];
-      const title = subcategory.charAt(0).toUpperCase() + subcategory.slice(1);
-      return <ContentListPage type="model" title={title} posts={posts.filter(p => p.status === 'published' && p.tags?.includes(subcategory))} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="reflexion" title="Réflexions" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     }
 
     // Video page
@@ -64,12 +59,12 @@ export default function App() {
 
     // Notes page
     if (currentPage === 'notes') {
-      return <ContentListPage type="note" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="notes" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     }
 
     // Library page
     if (currentPage === 'library') {
-      return <ContentListPage type="ebook" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="library" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
     }
 
     // Single post page

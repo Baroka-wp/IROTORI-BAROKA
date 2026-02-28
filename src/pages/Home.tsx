@@ -82,17 +82,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           className="space-y-10 text-xl text-[var(--text-color)]/70 font-light leading-relaxed"
         >
           <p className="text-3xl font-light text-[var(--text-color)] leading-snug">
-            Votre inaction est le fruit d'un esprit confus.
+            L'inaction est le fruit d'un esprit confus.
           </p>
           <div className="space-y-6 border-l-2 border-[#6B1A2A] pl-8 italic text-2xl">
-            <p>Vous pensez beaucoup, mais vous avancez peu.</p>
-            <p>Vous ressentez qu'il y a plus pour vous, mais vous restez bloqué.</p>
-            <p>Vous attendez le bon moment, sans jamais être certain.</p>
-          </div>
-          <div className="space-y-6 pt-4">
             <p className="font-medium text-[var(--text-color)] text-3xl tracking-tight">
               La clarté mentale est le point de départ de toute transformation.
             </p>
+          </div>
+          <div className="space-y-6 pt-4">
             <p className="text-2xl">
               Je vous aide à retrouver la clarté mentale et passer à l'action dans vos projets et votre vie.
             </p>
@@ -126,32 +123,42 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       />
 
       {/* About & Social Section */}
-      <section className="bg-[#6B1A2A] text-white py-32 px-4">
-        <div className="max-w-[800px] mx-auto space-y-16">
-          <div className="space-y-10">
-            <h2 className="text-5xl md:text-7xl font-light leading-[0.9] tracking-tighter">
-              Irotori Baroka
-            </h2>
-            <p className="text-xl uppercase tracking-widest opacity-60">
-              Ingénieur | Educateur | Entrepreneur
-            </p>
-            <p className="text-lg md:text-2xl text-white/90 font-light leading-relaxed">
-              J'aime créer des solutions technologiques et rendre les choses complexes plus simples et claires.
-            </p>
+      <section className="bg-[#6B1A2A] text-white py-0 px-4">
+        <div className="max-w-[1100px] mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div className="space-y-16">
+            <div className="space-y-10">
+              <h2 className="text-5xl md:text-7xl font-light leading-[0.9] tracking-tighter">
+                Irotori Baroka
+              </h2>
+              <p className="text-xl uppercase tracking-widest opacity-60">
+                Ingénieur | Educateur | Entrepreneur
+              </p>
+              <p className="text-lg md:text-2xl text-white/90 font-light leading-relaxed">
+                J'aime créer des solutions technologiques et rendre les choses complexes plus simples et claires.
+              </p>
+            </div>
+
+            <div className="pt-12 space-y-6 border-t border-white/20">
+              <p className="text-sm uppercase tracking-widest opacity-60">Me suivre</p>
+              <div className="flex gap-6">
+                <SocialLink name="Facebook" url="https://facebook.com" />
+                <SocialLink name="X.com" url="https://x.com" />
+                <SocialLink name="LinkedIn" url="https://linkedin.com" />
+              </div>
+            </div>
           </div>
 
-          <div className="pt-12 space-y-6 border-t border-white/20">
-            <p className="text-sm uppercase tracking-widest opacity-60">Me suivre</p>
-            <div className="flex gap-6">
-              <SocialLink name="Facebook" url="https://facebook.com" />
-              <SocialLink name="X.com" url="https://x.com" />
-              <SocialLink name="LinkedIn" url="https://linkedin.com" />
-            </div>
+          <div className="relative w-full max-w-[450px] mx-auto md:ml-auto">
+            <img
+              src="https://res.cloudinary.com/baroka/image/upload/v1772299484/PHOTO-2026-01-14-17-25-43-removebg-preview_kuprif.png"
+              alt="Irotori Baroka"
+              className="w-full h-auto drop-shadow-2xl"
+            />
           </div>
         </div>
       </section>
 
-      <div className="max-w-[680px] mx-auto px-4 pb-32">
+      <div className="max-w-[680px] mx-auto px-4 pb-2">
         <Newsletter />
       </div>
     </div>

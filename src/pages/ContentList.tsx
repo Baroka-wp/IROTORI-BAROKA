@@ -51,12 +51,21 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
   };
 
   const displayTitle = title || type.charAt(0).toUpperCase() + type.slice(1);
-  const postsBySubcategory = type === 'model' && selectedSubcategory !== 'all'
-    ? posts.filter(p => p.type === 'model' && p.tags?.includes(selectedSubcategory))
-    : posts.filter(p => p.type === 'model');
+
+  // Filter posts by type
+  const filteredPosts = posts.filter(p => {
+    if (type === 'reflexion') return p.type === 'model';
+    if (type === 'library') return p.type === 'ebook';
+    return p.type === type;
+  });
+
+  // Filter by subcategory for reflexion page
+  const postsBySubcategory = type === 'reflexion' && selectedSubcategory !== 'all'
+    ? filteredPosts.filter(p => p.tags?.includes(selectedSubcategory))
+    : filteredPosts;
 
   // Library Page
-  if (type === 'ebook') {
+  if (type === 'library') {
     return (
       <div>
         <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
@@ -66,8 +75,8 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
         </div>
         <div className="max-w-[680px] mx-auto px-4 pb-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {posts.length > 0 ? (
-              posts.map((post) => (
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => (
                 <article
                   key={post.id}
                   className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
@@ -128,8 +137,10 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {videoPlaylists.length > 0 ? (
                 videoPlaylists.map((playlistName) => (
-                  <button
+                  <motion.button
                     key={playlistName}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     onClick={() => handlePlaylistSelect(playlistName)}
                     className="group p-6 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg hover:border-[#6B1A2A] hover:shadow-md transition-all text-left"
                   >
@@ -142,7 +153,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
                     <p className="text-sm text-[var(--text-color)]/40 mt-2">
                       {posts.filter(p => p.type === 'video' && p.playlist === playlistName).length} vidéo(s)
                     </p>
-                  </button>
+                  </motion.button>
                 ))
               ) : (
                 <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-8">
@@ -216,7 +227,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
   }
 
   // Notes Page
-  if (type === 'note') {
+  if (type === 'notes') {
     return (
       <div>
         <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
@@ -226,8 +237,8 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
         </div>
         <div className="max-w-[680px] mx-auto px-4 pb-20">
           <div className="space-y-16">
-            {posts.length > 0 ? (
-              posts.map((post) => (
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => (
                 <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
                   <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
                   <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
@@ -250,42 +261,27 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
       <div className="border-b border-[#6B1A2A]/20 py-6 mb-12">
         <div className="max-w-[680px] mx-auto px-4">
           <h1 className="text-base md:text-lg font-normal text-[#6B1A2A] mb-4">{displayTitle}</h1>
-          {type === 'model' && (
-            <div className="flex flex-wrap gap-2">
-              {subcategories.map((sub) => (
-                <button
-                  key={sub.id}
-                  onClick={() => setSelectedSubcategory(sub.id)}
-                  className={`px-4 py-1.5 text-sm rounded-full transition-colors ${
-                    selectedSubcategory === sub.id
-                      ? 'bg-[#6B1A2A] text-white'
-                      : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A] border border-[var(--border-color)]'
-                  }`}
-                >
-                  {sub.name}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            {subcategories.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => setSelectedSubcategory(sub.id)}
+                className={`px-4 py-1.5 text-sm rounded-full transition-colors ${
+                  selectedSubcategory === sub.id
+                    ? 'bg-[#6B1A2A] text-white'
+                    : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A] border border-[var(--border-color)]'
+                }`}
+              >
+                {sub.name}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       <div className="max-w-[680px] mx-auto px-4 pb-20">
         <div className="space-y-16">
-          {type === 'model' ? (
-            postsBySubcategory.length > 0 ? (
-              postsBySubcategory.map((post) => (
-                <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
-                  <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
-                  <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
-                    {post.title}
-                  </h3>
-                </article>
-              ))
-            ) : (
-              <p className="text-[var(--text-color)]/40 font-light italic">Aucune réflexion dans cette catégorie.</p>
-            )
-          ) : posts.length > 0 ? (
-            posts.map((post) => (
+          {postsBySubcategory.length > 0 ? (
+            postsBySubcategory.map((post) => (
               <article key={post.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${post.slug}`)}>
                 <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(post.createdAt)}</p>
                 <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
@@ -294,7 +290,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, p
               </article>
             ))
           ) : (
-            <p className="text-[var(--text-color)]/40 font-light italic">Nothing here yet.</p>
+            <p className="text-[var(--text-color)]/40 font-light italic">Aucune réflexion dans cette catégorie.</p>
           )}
         </div>
       </div>

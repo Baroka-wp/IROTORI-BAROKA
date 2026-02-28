@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Menu, X, Sun, Moon, Settings } from 'lucide-react';
+import { Menu, X, Sun, Moon, Settings } from 'lucide-react';
 
 interface NavItem {
-  name: string;
-  path: string;
-  hasSubmenu?: boolean;
-}
-
-interface SubNavItem {
   name: string;
   path: string;
 }
@@ -21,22 +15,14 @@ interface NavbarProps {
 }
 
 const navItems: NavItem[] = [
-  { name: 'Réflexions', path: 'reflexion', hasSubmenu: true },
+  { name: 'Réflexions', path: 'reflexion' },
   { name: 'Vidéos', path: 'video' },
   { name: 'Notes de lecture', path: 'notes' },
   { name: 'Library', path: 'library' },
 ];
 
-const reflexionSubItems: SubNavItem[] = [
-  { name: 'Spiritualité', path: 'reflexion/spiritualite' },
-  { name: 'Entrepreneurial/MindSet', path: 'reflexion/entrepreneurial' },
-  { name: 'Management', path: 'reflexion/management' },
-  { name: 'Éducation', path: 'reflexion/education' },
-];
-
 export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [reflexionOpen, setReflexionOpen] = useState(false);
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-color)]/80 backdrop-blur-md border-b border-[var(--border-color)]">
@@ -51,45 +37,13 @@ export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNa
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
           {navItems.map((item) => (
-            item.hasSubmenu ? (
-              <div key={item.path} className="relative">
-                <button
-                  onClick={() => setReflexionOpen(!reflexionOpen)}
-                  className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors flex items-center gap-1"
-                >
-                  {item.name}
-                  <ChevronDown size={14} className={`transition-transform ${reflexionOpen ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence>
-                  {reflexionOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 mt-2 bg-[var(--bg-color)] border border-[var(--border-color)] py-2 min-w-[180px] shadow-lg"
-                    >
-                      {reflexionSubItems.map((sub) => (
-                        <button
-                          key={sub.path}
-                          onClick={() => { onNavigate(sub.path); setReflexionOpen(false); }}
-                          className="block w-full text-left px-4 py-2 text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] hover:bg-[var(--card-bg)] transition-colors"
-                        >
-                          {sub.name}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <button
-                key={item.path}
-                onClick={() => onNavigate(item.path)}
-                className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
-              >
-                {item.name}
-              </button>
-            )
+            <button
+              key={item.path}
+              onClick={() => onNavigate(item.path)}
+              className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
+            >
+              {item.name}
+            </button>
           ))}
           <button
             onClick={onToggleTheme}
@@ -131,38 +85,13 @@ export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNa
             className="md:hidden bg-[var(--bg-color)] border-b border-[var(--border-color)] px-4 py-6 space-y-4"
           >
             {navItems.map((item) => (
-              item.hasSubmenu ? (
-                <div key={item.path} className="space-y-2">
-                  <button
-                    onClick={() => setReflexionOpen(!reflexionOpen)}
-                    className="block w-full text-left text-lg font-light text-[var(--text-color)] flex items-center justify-between"
-                  >
-                    {item.name}
-                    <ChevronDown size={16} className={`transition-transform ${reflexionOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  {reflexionOpen && (
-                    <div className="pl-4 space-y-2 border-l border-[var(--border-color)]">
-                      {reflexionSubItems.map((sub) => (
-                        <button
-                          key={sub.path}
-                          onClick={() => { onNavigate(sub.path); setIsOpen(false); }}
-                          className="block w-full text-left text-base font-light text-[var(--text-color)]/80 hover:text-[#6B1A2A]"
-                        >
-                          {sub.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  key={item.path}
-                  onClick={() => { onNavigate(item.path); setIsOpen(false); }}
-                  className="block w-full text-left text-lg font-light text-[var(--text-color)]"
-                >
-                  {item.name}
-                </button>
-              )
+              <button
+                key={item.path}
+                onClick={() => { onNavigate(item.path); setIsOpen(false); }}
+                className="block w-full text-left text-lg font-light text-[var(--text-color)]"
+              >
+                {item.name}
+              </button>
             ))}
             {user && (
               <button
