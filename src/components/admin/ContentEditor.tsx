@@ -199,7 +199,7 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
-                        Prix (en centimes)
+                        Prix (en FCFA)
                       </label>
                       <input
                         type="number"
@@ -209,7 +209,7 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                         placeholder="0"
                       />
                       <p className="text-xs text-[var(--text-color)]/40 mt-1">
-                        {formData.price === 0 ? 'Gratuit' : `${(formData.price / 100).toFixed(2)} €`}
+                        {formData.price === 0 ? 'Gratuit' : `${formData.price} FCFA`}
                       </p>
                     </div>
                     <div>

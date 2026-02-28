@@ -203,7 +203,7 @@ export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
         {/* Prix et bouton de téléchargement sous l'image */}
         <div className="flex items-center justify-between mb-8 pb-8 border-b border-[var(--border-color)]">
           <span className={`text-xl font-medium ${ebook.price === 0 ? 'text-green-500' : 'text-[#6B1A2A]'}`}>
-            {ebook.price === 0 ? 'Gratuit' : `${(ebook.price / 100).toFixed(2)} €`}
+            {ebook.price === 0 ? 'Gratuit' : `${ebook.price} FCFA`}
           </span>
           {ebook.downloadUrl && (
             <a
