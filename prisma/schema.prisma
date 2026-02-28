@@ -6,7 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-   url     = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -14,27 +14,88 @@ model User {
   email          String   @unique
   hashedPassword String
   createdAt      DateTime @default(now())
-}
-
-model Post {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  type        String   // video, model, ebook, note
-  content     String
-  status      String   @default("draft") // draft, published
-  tags        String?  // Comma separated tags or subcategory for model
-  description String?  // Description pour les ebooks et videos
-  coverImage  String?  // URL de l'image de couverture
-  downloadUrl String?  // Lien de telechargement (Google Drive)
-  videoUrl    String?  // Lien de la video (YouTube / Drive)
-  playlist    String?  // Nom de la playlist pour les videos
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt      DateTime @updatedAt
 }
 
 model Subscriber {
   id        String   @id @default(cuid())
   email     String   @unique
-  createdAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Réflexions (Articles de blog / Pensées)
+model Reflexion {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String
+  tags        String?  // Comma separated: spiritualite, entrepreneurial, management, education
+  status      String   @default("draft") // draft, published
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([tags])
+}
+
+// Vidéos (Webinaires, Formations)
+model Video {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  thumbnail   String?  // URL de la miniature
+  videoUrl    String?  // Lien YouTube/Drive
+  playlist    String?  // Catégorie/Playlist
+  tags        String?  // Comma separated
+  resume      String?  // Résumé détaillé
+  status      String   @default("draft")
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([playlist])
+}
+
+// E-books (Library)
+model Ebook {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  subtitle      String?
+  shortDescription String?  // Description courte (texte simple)
+  description   String?  // Description détaillée (éditeur riche)
+  coverImage    String?  // URL de la couverture
+  downloadUrl   String?  // Lien de téléchargement
+  price         Int      @default(0) // Prix en centimes (0 = gratuit)
+  status        String   @default("draft")
+  publishedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@index([price])
+}
+
+// Notes de lecture
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String
+  bookTitle   String?  // Livre de référence
+  author      String?  // Auteur du livre
+  status      String   @default("draft")
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([status])
 }

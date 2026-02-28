@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import path from "path";
+import { getContent, getContentBySlug, createContent, updateContent, deleteContent, type ContentType } from "./api/lib/handlers";
 
 dotenv.config();
 
@@ -32,6 +33,65 @@ async function startServer() {
   };
 
   // --- API Routes ---
+
+  // Generic content routes factory
+  const createContentRoutes = (type: ContentType) => {
+    // List
+    app.get(`/api/${type}s`, async (req, res) => {
+      try {
+        const result = await getContent(type, req.query);
+        res.json(result);
+      } catch (err: any) {
+        res.status(400).json({ error: err.message });
+      }
+    });
+
+    // Get single
+    app.get(`/api/${type}s/:slug`, async (req, res) => {
+      try {
+        const item = await getContentBySlug(type, req.params.slug);
+        res.json(item);
+      } catch (err: any) {
+        res.status(404).json({ error: err.message });
+      }
+    });
+
+    // Create
+    app.post(`/api/${type}s`, authenticate, async (req, res) => {
+      try {
+        const item = await createContent(type, req.body);
+        res.json(item);
+      } catch (err: any) {
+        res.status(400).json({ error: err.message });
+      }
+    });
+
+    // Update
+    app.put(`/api/${type}s/:slug`, authenticate, async (req, res) => {
+      try {
+        const item = await updateContent(type, req.params.slug, req.body);
+        res.json(item);
+      } catch (err: any) {
+        res.status(400).json({ error: err.message });
+      }
+    });
+
+    // Delete
+    app.delete(`/api/${type}s/:slug`, authenticate, async (req, res) => {
+      try {
+        await deleteContent(type, req.params.slug);
+        res.json({ success: true });
+      } catch (err: any) {
+        res.status(400).json({ error: err.message });
+      }
+    });
+  };
+
+  // Create routes for each content type
+  createContentRoutes('reflexion');
+  createContentRoutes('video');
+  createContentRoutes('ebook');
+  createContentRoutes('note');
 
   // Auth
   app.post("/api/auth/login", async (req, res) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -14,7 +14,7 @@ const Editor: React.FC<EditorProps> = ({ content, onChange }) => {
       StarterKit,
       Image,
     ],
-    content,
+    content: '', // Start with empty content, will be set via useEffect
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
@@ -24,6 +24,13 @@ const Editor: React.FC<EditorProps> = ({ content, onChange }) => {
       },
     },
   });
+
+  // Update editor content when content prop changes
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [editor, content]);
 
   if (!editor) return null;
 

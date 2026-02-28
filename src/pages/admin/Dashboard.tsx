@@ -1,62 +1,359 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
-import { formatDate, Post } from '../../lib/utils';
+import { Sidebar, StatCard, ContentTable } from '../../components/admin/Sidebar';
+import { ContentEditor } from '../../components/admin/ContentEditor';
+import { LoginPage } from './Login';
+import { BarChart3, FileText, Video, Library, Book, Plus, Menu } from 'lucide-react';
+import { Reflexion, Video as VideoType, Ebook, Note } from '../../lib/utils';
 
-interface AdminDashboardProps {
-  onNavigate: (page: string) => void;
-  posts: Post[];
-  onRefresh: () => void;
-}
+type ContentType = 'reflexion' | 'video' | 'ebook' | 'note';
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate, posts, onRefresh }) => {
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure?')) {
-      await fetch(`/api/posts/${id}`, { method: 'DELETE' });
-      onRefresh();
+export default function AdminDashboard() {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Contenu
+  const [reflexions, setReflexions] = useState<Reflexion[]>([]);
+  const [videos, setVideos] = useState<VideoType[]>([]);
+  const [ebooks, setEbooks] = useState<Ebook[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  // Editor
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorType, setEditorType] = useState<ContentType>('reflexion');
+  const [editingSlug, setEditingSlug] = useState<string | undefined>();
+  const [editingData, setEditingData] = useState<any>(null);
+
+  const fetchContent = async () => {
+    try {
+      const [reflexionsRes, videosRes, ebooksRes, notesRes] = await Promise.all([
+        fetch('/api/reflexions').then(r => r.json()),
+        fetch('/api/videos').then(r => r.json()),
+        fetch('/api/ebooks').then(r => r.json()),
+        fetch('/api/notes').then(r => r.json()),
+      ]);
+
+      setReflexions(reflexionsRes.data || []);
+      setVideos(videosRes.data || []);
+      setEbooks(ebooksRes.data || []);
+      setNotes(notesRes.data || []);
+    } catch (error) {
+      console.error('Error fetching content:', error);
     }
   };
 
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+
+      if (data.user) {
+        setUser(data.user);
+        await fetchContent();
+      }
+      setAuthLoading(false);
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setAuthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const handleLogin = () => {
+    checkAuth();
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setUser(null);
+    setReflexions([]);
+    setVideos([]);
+    setEbooks([]);
+    setNotes([]);
+    setCurrentPage('dashboard');
+  };
+
+  const handleSave = async (data: any) => {
+    const endpoint = `/api/${editorType}s${editingSlug ? `/${editingSlug}` : ''}`;
+    const method = editingSlug ? 'PUT' : 'POST';
+
+    const res = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (res.ok) {
+      setEditorOpen(false);
+      setEditingSlug(undefined);
+      setEditingData(null);
+      fetchContent();
+    } else {
+      const error = await res.json();
+      alert(`Erreur: ${error.error || 'Erreur inconnue'}`);
+    }
+  };
+
+  const handleDelete = async (type: ContentType, slug: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?')) return;
+
+    const res = await fetch(`/api/${type}/${slug}`, { method: 'DELETE' });
+    if (res.ok) {
+      fetchContent();
+    } else {
+      alert('Erreur lors de la suppression');
+    }
+  };
+
+  const openEditor = (type: ContentType, slug?: string) => {
+    setEditorType(type);
+    setEditingSlug(slug);
+    setEditingData(null); // ContentEditor will fetch its own data
+    setEditorOpen(true);
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-color)]">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-[#6B1A2A] border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-[var(--text-color)]/40">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  // Stats
+  const stats = {
+    reflexions: reflexions.length,
+    videos: videos.length,
+    ebooks: ebooks.length,
+    notes: notes.length,
+    published: [
+      ...reflexions.filter(r => r.status === 'published'),
+      ...videos.filter(v => v.status === 'published'),
+      ...ebooks.filter(e => e.status === 'published'),
+      ...notes.filter(n => n.status === 'published'),
+    ].length,
+  };
+
+  const renderContent = () => {
+    if (currentPage === 'dashboard') {
+      return (
+        <div className="space-y-8">
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <StatCard
+              title="Réflexions"
+              value={stats.reflexions}
+              icon={FileText}
+              color="bg-blue-500"
+            />
+            <StatCard
+              title="Vidéos"
+              value={stats.videos}
+              icon={Video}
+              color="bg-red-500"
+            />
+            <StatCard
+              title="E-books"
+              value={stats.ebooks}
+              icon={Library}
+              color="bg-green-500"
+            />
+            <StatCard
+              title="Notes"
+              value={stats.notes}
+              icon={Book}
+              color="bg-purple-500"
+            />
+            <StatCard
+              title="Publiés"
+              value={stats.published}
+              icon={BarChart3}
+              trend="+12%"
+              color="bg-[#6B1A2A]"
+            />
+          </div>
+
+          {/* Recent content tables */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ContentTable
+              title="Dernières réflexions"
+              items={reflexions.slice(0, 5)}
+              onEdit={(slug) => openEditor('reflexion', slug)}
+              onDelete={(slug) => handleDelete('reflexion', slug)}
+              columns={['Titre', 'Statut', 'Date']}
+            />
+            <ContentTable
+              title="Dernières vidéos"
+              items={videos.slice(0, 5)}
+              onEdit={(slug) => openEditor('video', slug)}
+              onDelete={(slug) => handleDelete('video', slug)}
+              columns={['Titre', 'Statut', 'Date']}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (currentPage === 'reflexions') {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-medium text-[var(--text-color)]">Réflexions</h2>
+            <button
+              onClick={() => openEditor('reflexion')}
+              className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Plus size={18} />
+              Nouvelle réflexion
+            </button>
+          </div>
+          <ContentTable
+            title="Toutes les réflexions"
+            items={reflexions}
+            onEdit={(slug) => openEditor('reflexion', slug)}
+            onDelete={(slug) => handleDelete('reflexion', slug)}
+            columns={['Titre', 'Statut', 'Date']}
+          />
+        </div>
+      );
+    }
+
+    if (currentPage === 'videos') {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-medium text-[var(--text-color)]">Vidéos</h2>
+            <button
+              onClick={() => openEditor('video')}
+              className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Plus size={18} />
+              Nouvelle vidéo
+            </button>
+          </div>
+          <ContentTable
+            title="Toutes les vidéos"
+            items={videos}
+            onEdit={(slug) => openEditor('video', slug)}
+            onDelete={(slug) => handleDelete('video', slug)}
+            columns={['Titre', 'Statut', 'Date']}
+          />
+        </div>
+      );
+    }
+
+    if (currentPage === 'ebooks') {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-medium text-[var(--text-color)]">E-books</h2>
+            <button
+              onClick={() => openEditor('ebook')}
+              className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Plus size={18} />
+              Nouvel E-book
+            </button>
+          </div>
+          <ContentTable
+            title="Tous les E-books"
+            items={ebooks}
+            onEdit={(slug) => openEditor('ebook', slug)}
+            onDelete={(slug) => handleDelete('ebook', slug)}
+            columns={['Titre', 'Statut', 'Date']}
+          />
+        </div>
+      );
+    }
+
+    if (currentPage === 'notes') {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-medium text-[var(--text-color)]">Notes de lecture</h2>
+            <button
+              onClick={() => openEditor('note')}
+              className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+            >
+              <Plus size={18} />
+              Nouvelle note
+            </button>
+          </div>
+          <ContentTable
+            title="Toutes les notes"
+            items={notes}
+            onEdit={(slug) => openEditor('note', slug)}
+            onDelete={(slug) => handleDelete('note', slug)}
+            columns={['Titre', 'Statut', 'Date']}
+          />
+        </div>
+      );
+    }
+
+    return <div className="text-[var(--text-color)]/40">Page en construction</div>;
+  };
+
   return (
-    <div className="max-w-[680px] mx-auto px-4 py-20">
-      <div className="flex items-center justify-between mb-16">
-        <h1 className="text-4xl font-light text-[#6B1A2A]">Dashboard</h1>
-        <button
-          onClick={() => onNavigate('admin/new')}
-          className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
-        >
-          <Plus size={16} /> New Content
-        </button>
+    <div className="min-h-screen bg-[var(--bg-color)]">
+      <Sidebar
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onLogout={handleLogout}
+        userEmail={user?.email}
+      />
+
+      {/* Main content */}
+      <div className="md:ml-64">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-[var(--bg-color)]/80 backdrop-blur-md border-b border-[var(--border-color)]">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden text-[var(--text-color)]"
+          >
+            <Menu size={24} />
+          </button>
+
+          <div className="flex items-center gap-4 ml-auto">
+            <span className="text-sm text-[var(--text-color)]/60 hidden md:block">
+              {user?.email}
+            </span>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="p-6">
+          {renderContent()}
+        </main>
       </div>
 
-      <div className="space-y-4">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="flex items-center justify-between p-4 border border-[var(--border-color)] bg-[var(--card-bg)] hover:border-[var(--text-color)]/20 transition-colors"
-          >
-            <div>
-              <h3 className="font-medium text-base text-[var(--text-color)]">{post.title}</h3>
-              <p className="text-sm text-[var(--text-color)]/40 font-light">
-                {post.type} • {post.status} • {formatDate(post.createdAt)}
-              </p>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => onNavigate(`admin/edit/${post.slug}`)}
-                className="text-sm text-[#6B1A2A] hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(post.id)}
-                className="text-sm text-red-500/60 hover:text-red-500"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Editor modal */}
+      {editorOpen && (
+        <ContentEditor
+          type={editorType}
+          slug={editingSlug}
+          initialData={editingData}
+          onSave={handleSave}
+          onCancel={() => {
+            setEditorOpen(false);
+            setEditingSlug(undefined);
+            setEditingData(null);
+          }}
+        />
+      )}
     </div>
   );
-};
+}

@@ -1,0 +1,475 @@
+import React, { useState, useEffect } from 'react';
+import Editor from '../../components/Editor';
+import { X } from 'lucide-react';
+
+interface ContentEditorProps {
+  type: 'reflexion' | 'video' | 'ebook' | 'note';
+  slug?: string;
+  initialData?: any;
+  onSave: (data: any) => Promise<void>;
+  onCancel: () => void;
+}
+
+export const ContentEditor: React.FC<ContentEditorProps> = ({
+  type,
+  slug,
+  initialData,
+  onSave,
+  onCancel,
+}) => {
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    slug: '',
+    subtitle: '',
+    shortDescription: '',
+    description: '',
+    content: '',
+    resume: '',
+    tags: '',
+    thumbnail: '',
+    videoUrl: '',
+    playlist: '',
+    coverImage: '',
+    downloadUrl: '',
+    price: 0,
+    bookTitle: '',
+    author: '',
+    status: 'draft',
+  });
+
+  // Fetch data if slug is provided
+  useEffect(() => {
+    if (slug) {
+      const endpoint = `/api/${type}s/${slug}`;
+      fetch(endpoint)
+        .then(res => {
+          if (!res.ok) throw new Error('Not found');
+          return res.json();
+        })
+        .then(data => {
+          console.log('Fetched data for editing:', data);
+          setFormData((prev) => ({
+            ...prev,
+            title: data.title || '',
+            slug: data.slug || '',
+            content: data.content || '',
+            description: data.description || '',
+            resume: data.resume || '',
+            subtitle: data.subtitle || '',
+            tags: data.tags || '',
+            thumbnail: data.thumbnail || '',
+            videoUrl: data.videoUrl || '',
+            playlist: data.playlist || '',
+            coverImage: data.coverImage || '',
+            downloadUrl: data.downloadUrl || '',
+            bookTitle: data.bookTitle || '',
+            author: data.author || '',
+            price: data.price || 0,
+            status: data.status || 'draft',
+          }));
+        })
+        .catch(err => {
+          console.error('Error fetching data:', err);
+        });
+    }
+  }, [slug, type]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Prepare data based on type
+    const dataToSend: any = {
+      title: formData.title,
+      slug: formData.slug,
+      status: formData.status,
+    };
+
+    // Add type-specific fields
+    if (type === 'reflexion') {
+      dataToSend.content = formData.content;
+      dataToSend.tags = formData.tags;
+    } else if (type === 'video') {
+      dataToSend.description = formData.description;
+      dataToSend.thumbnail = formData.thumbnail;
+      dataToSend.videoUrl = formData.videoUrl;
+      dataToSend.playlist = formData.playlist;
+      dataToSend.tags = formData.tags;
+      dataToSend.resume = formData.resume;
+    } else if (type === 'ebook') {
+      dataToSend.subtitle = formData.subtitle;
+      dataToSend.shortDescription = formData.shortDescription;
+      dataToSend.description = formData.description;
+      dataToSend.coverImage = formData.coverImage;
+      dataToSend.downloadUrl = formData.downloadUrl;
+      dataToSend.price = formData.price;
+    } else if (type === 'note') {
+      dataToSend.content = formData.content;
+      dataToSend.bookTitle = formData.bookTitle;
+      dataToSend.author = formData.author;
+    }
+
+    try {
+      await onSave(dataToSend);
+    } catch (error) {
+      console.error('Error saving:', error);
+    }
+    setLoading(false);
+  };
+
+  const updateField = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Auto-generate slug from title
+    if (field === 'title' && !slug) {
+      const slugified = value
+        .toLowerCase()
+        .replace(/ /g, '-')
+        .replace(/[^\w-]+/g, '');
+      setFormData((prev) => ({ ...prev, slug: slugified }));
+    }
+  };
+
+  const reflexionTags = ['spiritualite', 'entrepreneurial', 'management', 'education'];
+  const videoTags = ['philosophie', 'spiritualite', 'mindset'];
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50" onClick={onCancel} />
+      
+      <div className="relative min-h-screen flex items-center justify-center p-4">
+        <div className="relative bg-[var(--bg-color)] border border-[var(--border-color)] rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="sticky top-0 flex items-center justify-between p-6 border-b border-[var(--border-color)] bg-[var(--bg-color)]">
+            <h2 className="text-2xl font-medium text-[#6B1A2A]">
+              {slug ? 'Modifier' : 'Créer'} {type === 'reflexion' ? 'Réflexion' : type === 'video' ? 'Vidéo' : type === 'ebook' ? 'E-book' : 'Note'}
+            </h2>
+            <button onClick={onCancel} className="text-[var(--text-color)]/60 hover:text-[var(--text-color)]">
+              <X size={24} />
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Common fields */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                  Titre *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={(e) => updateField('title', e.target.value)}
+                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                  placeholder="Titre du contenu"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                  Slug *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.slug}
+                  onChange={(e) => updateField('slug', e.target.value)}
+                  className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                  placeholder="mon-contenu"
+                />
+              </div>
+
+              {/* Type-specific fields */}
+              {type === 'ebook' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Sous-titre
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.subtitle}
+                      onChange={(e) => updateField('subtitle', e.target.value)}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="Sous-titre du livre"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Prix (en centimes)
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => updateField('price', parseInt(e.target.value) || 0)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="0"
+                      />
+                      <p className="text-xs text-[var(--text-color)]/40 mt-1">
+                        {formData.price === 0 ? 'Gratuit' : `${(formData.price / 100).toFixed(2)} €`}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Lien de téléchargement
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.downloadUrl}
+                        onChange={(e) => updateField('downloadUrl', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      URL de la couverture
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.coverImage}
+                      onChange={(e) => updateField('coverImage', e.target.value)}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Description courte
+                    </label>
+                    <textarea
+                      value={formData.shortDescription}
+                      onChange={(e) => updateField('shortDescription', e.target.value)}
+                      rows={2}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="Description courte pour la liste..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Description détaillée
+                    </label>
+                    <Editor
+                      content={formData.description}
+                      onChange={(content) => updateField('description', content)}
+                    />
+                  </div>
+                </>
+              )}
+
+              {type === 'video' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Playlist / Catégorie
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.playlist}
+                        onChange={(e) => updateField('playlist', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="Nom de la playlist"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Tags
+                      </label>
+                      <select
+                        value={formData.tags}
+                        onChange={(e) => updateField('tags', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      >
+                        <option value="">Sélectionner</option>
+                        {videoTags.map((tag) => (
+                          <option key={tag} value={tag}>{tag}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      URL de la miniature
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.thumbnail}
+                      onChange={(e) => updateField('thumbnail', e.target.value)}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      URL de la vidéo (YouTube)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.videoUrl}
+                      onChange={(e) => updateField('videoUrl', e.target.value)}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="https://youtube.com/watch?v=..."
+                    />
+                  </div>
+                </>
+              )}
+
+              {type === 'note' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Titre du livre
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.bookTitle}
+                        onChange={(e) => updateField('bookTitle', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="Titre du livre"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Auteur
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.author}
+                        onChange={(e) => updateField('author', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="Nom de l'auteur"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {(type === 'reflexion' || type === 'video') && (
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => updateField('description', e.target.value)}
+                    rows={3}
+                    className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                    placeholder="Description courte..."
+                  />
+                </div>
+              )}
+
+              {type === 'video' && (
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                    Résumé détaillé
+                  </label>
+                  <Editor
+                    content={formData.resume}
+                    onChange={(content) => updateField('resume', content)}
+                  />
+                </div>
+              )}
+
+              {(type === 'reflexion' || type === 'note') && (
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                    Contenu
+                  </label>
+                  <Editor
+                    content={formData.content}
+                    onChange={(content) => updateField('content', content)}
+                  />
+                </div>
+              )}
+
+              {type === 'reflexion' && (
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                    Tags
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {reflexionTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          const currentTags = formData.tags ? formData.tags.split(',') : [];
+                          const newTags = currentTags.includes(tag)
+                            ? currentTags.filter((t) => t !== tag)
+                            : [...currentTags, tag];
+                          updateField('tags', newTags.join(','));
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                          formData.tags?.includes(tag)
+                            ? 'bg-[#6B1A2A] text-white'
+                            : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A]'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                  Statut
+                </label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="draft"
+                      checked={formData.status === 'draft'}
+                      onChange={(e) => updateField('status', e.target.value)}
+                      className="text-[#6B1A2A] focus:ring-[#6B1A2A]"
+                    />
+                    <span className="text-sm text-[var(--text-color)]">Brouillon</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      value="published"
+                      checked={formData.status === 'published'}
+                      onChange={(e) => updateField('status', e.target.value)}
+                      className="text-[#6B1A2A] focus:ring-[#6B1A2A]"
+                    />
+                    <span className="text-sm text-[var(--text-color)]">Publié</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-4 pt-6 border-t border-[var(--border-color)]">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-6 py-3 text-base font-light text-[var(--text-color)] hover:underline"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[#6B1A2A] text-white px-8 py-3 text-base font-medium hover:opacity-90 transition-opacity disabled:opacity-50 rounded-lg"
+              >
+                {loading ? 'Enregistrement...' : 'Enregistrer'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};

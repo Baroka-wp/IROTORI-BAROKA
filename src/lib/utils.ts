@@ -6,28 +6,83 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: string | Date) {
-  return new Date(date).toLocaleDateString("en-US", {
+  return new Date(date).toLocaleDateString("fr-FR", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
 }
 
-export type PostType = "blog" | "model" | "ebook" | "note" | "quote" | "video";
+// Types de contenu
+export type ReflexionTag = "spiritualite" | "entrepreneurial" | "management" | "education";
+export type VideoTag = "philosophie" | "spiritualite" | "mindset";
+export type ContentStatus = "draft" | "published";
 
-export interface Post {
+// Réflexion
+export interface Reflexion {
   id: string;
   title: string;
   slug: string;
-  type: PostType;
   content: string;
-  status: "draft" | "published";
   tags?: string;
+  status: ContentStatus;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Vidéo
+export interface Video {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  thumbnail?: string;
+  videoUrl?: string;
+  playlist?: string;
+  tags?: string;
+  resume?: string;
+  status: ContentStatus;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// E-book
+export interface Ebook {
+  id: string;
+  title: string;
+  slug: string;
+  subtitle?: string;
   description?: string;
   coverImage?: string;
   downloadUrl?: string;
-  videoUrl?: string;
-  playlist?: string;
+  price: number; // en centimes (0 = gratuit)
+  status: ContentStatus;
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// Note de lecture
+export interface Note {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  bookTitle?: string;
+  author?: string;
+  status: ContentStatus;
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Type union pour le routing
+export type ContentItem = Reflexion | Video | Ebook | Note;
+
+// Helper pour vérifier le prix
+export function formatPrice(priceInCents: number): string {
+  if (priceInCents === 0) return "Gratuit";
+  return `${(priceInCents / 100).toFixed(2)} €`;
 }

@@ -5,23 +5,81 @@ import { Footer } from './components/layout/Footer';
 import { HomePage } from './pages/Home';
 import { ContentListPage } from './pages/ContentList';
 import { PostPage } from './pages/Post';
-import { AdminDashboard } from './pages/admin/Dashboard';
-import { AdminEditorPage } from './pages/admin/Editor';
-import { LoginPage } from './pages/admin/Login';
-import { Post } from './lib/utils';
+import AdminDashboard from './pages/admin/Dashboard';
+import { Reflexion, Video, Ebook, Note } from './lib/utils';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-  const [user, setUser] = useState<any>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Get initial page from URL
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.slice(1); // Remove leading /
+      if (path.startsWith('admin')) return 'admin';
+      if (path.startsWith('post/')) return path;
+      if (path) return path;
+    }
+    return 'home';
+  });
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
-  const fetchPosts = () => {
-    fetch('/api/posts')
-      .then(res => res.json())
-      .then(data => setPosts(data));
-  };
+  // Contenu pour le site public
+  const [reflexions, setReflexions] = useState<Reflexion[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [ebooks, setEbooks] = useState<Ebook[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+
+  // Admin mode
+  const [isAdminRoute, setIsAdminRoute] = useState(false);
+
+  useEffect(() => {
+    // Check if current page is admin
+    setIsAdminRoute(currentPage === 'admin' || currentPage.startsWith('admin/'));
+  }, [currentPage]);
+
+  // Fetch content for public pages
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const [reflexionsRes, videosRes, ebooksRes, notesRes] = await Promise.all([
+          fetch('/api/reflexions?status=published').then(r => r.json()),
+          fetch('/api/videos?status=published').then(r => r.json()),
+          fetch('/api/ebooks?status=published').then(r => r.json()),
+          fetch('/api/notes?status=published').then(r => r.json()),
+        ]);
+
+        console.log('Fetched reflexions:', reflexionsRes.data);
+        console.log('Fetched videos:', videosRes.data);
+        console.log('Fetched ebooks:', ebooksRes.data);
+        console.log('Fetched notes:', notesRes.data);
+
+        setReflexions(reflexionsRes.data || []);
+        setVideos(videosRes.data || []);
+        setEbooks(ebooksRes.data || []);
+        setNotes(notesRes.data || []);
+      } catch (error) {
+        console.error('Error fetching content:', error);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
+  // Sync with browser URL
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.slice(1);
+      if (path.startsWith('admin')) {
+        setCurrentPage('admin');
+      } else if (path) {
+        setCurrentPage(path);
+      } else {
+        setCurrentPage('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -29,42 +87,42 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(data => setUser(data.user));
-
-    fetchPosts();
     setLoading(false);
   }, []);
 
   const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
-  const handleLogin = async () => {
-    const data = await fetch('/api/auth/me').then(res => res.json());
-    setUser(data.user);
+  const navigate = (page: string) => {
+    setCurrentPage(page);
+    window.history.pushState({}, '', `/${page}`);
   };
 
   const renderPage = () => {
-    if (currentPage === 'home') return <HomePage onNavigate={setCurrentPage} />;
+    // Admin routes
+    if (currentPage === 'admin' || currentPage.startsWith('admin/')) {
+      return <AdminDashboard />;
+    }
+
+    if (currentPage === 'home') return <HomePage onNavigate={navigate} />;
 
     // Reflexion page with subcategories
     if (currentPage === 'reflexion') {
-      return <ContentListPage type="reflexion" title="Réflexions" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="reflexion" title="Réflexions" items={reflexions} onNavigate={navigate} />;
     }
 
     // Video page
     if (currentPage === 'video') {
-      return <ContentListPage type="video" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="video" title="Vidéos" items={videos} onNavigate={navigate} />;
     }
 
     // Notes page
     if (currentPage === 'notes') {
-      return <ContentListPage type="notes" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="notes" title="Notes de lecture" items={notes} onNavigate={navigate} />;
     }
 
     // Library page
     if (currentPage === 'library') {
-      return <ContentListPage type="library" posts={posts.filter(p => p.status === 'published')} onNavigate={setCurrentPage} />;
+      return <ContentListPage type="library" title="Library" items={ebooks} onNavigate={navigate} />;
     }
 
     // Single post page
@@ -73,31 +131,24 @@ export default function App() {
       return <PostPage slug={slug} />;
     }
 
-    // Admin pages
-    if (currentPage === 'admin') {
-      if (!user) return <LoginPage onLogin={() => { handleLogin(); setCurrentPage('admin'); }} />;
-      return <AdminDashboard onNavigate={setCurrentPage} posts={posts} onRefresh={fetchPosts} />;
-    }
-
-    if (currentPage === 'admin/new') {
-      if (!user) return <LoginPage onLogin={() => { handleLogin(); setCurrentPage('admin/new'); }} />;
-      return <AdminEditorPage onNavigate={setCurrentPage} onRefresh={fetchPosts} />;
-    }
-
-    if (currentPage.startsWith('admin/edit/')) {
-      if (!user) return <LoginPage onLogin={() => { handleLogin(); setCurrentPage(currentPage); }} />;
-      const slug = currentPage.split('/')[2];
-      return <AdminEditorPage slug={slug} onNavigate={setCurrentPage} onRefresh={fetchPosts} />;
-    }
-
     return <div className="py-20 text-center">404 - Page not found</div>;
   };
 
   if (loading) return null;
 
+  // Admin layout (no navbar/footer)
+  if (isAdminRoute) {
+    return (
+      <div className="min-h-screen font-sans selection:bg-[#6B1A2A]/20 selection:text-[#6B1A2A] transition-colors duration-300">
+        {renderPage()}
+      </div>
+    );
+  }
+
+  // Public layout
   return (
     <div className="min-h-screen font-sans selection:bg-[#6B1A2A]/20 selection:text-[#6B1A2A] transition-colors duration-300">
-      <Navbar user={user} theme={theme} onToggleTheme={toggleTheme} onNavigate={setCurrentPage} />
+      <Navbar user={null} theme={theme} onToggleTheme={toggleTheme} onNavigate={navigate} />
 
       <main className="min-h-[calc(100vh-200px)]">
         <AnimatePresence mode="wait">
