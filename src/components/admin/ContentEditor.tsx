@@ -472,37 +472,6 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                 </>
               )}
 
-              {type === 'note' && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
-                        Titre du livre
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.bookTitle}
-                        onChange={(e) => updateField('bookTitle', e.target.value)}
-                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
-                        placeholder="Titre du livre"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
-                        Auteur
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.author}
-                        onChange={(e) => updateField('author', e.target.value)}
-                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
-                        placeholder="Nom de l'auteur"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
               {(type === 'reflexion' || type === 'video') && (
                 <div>
                   <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
@@ -530,7 +499,7 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                 </div>
               )}
 
-              {(type === 'reflexion' || type === 'note') && (
+              {type === 'reflexion' && (
                 <div>
                   <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
                     Contenu
