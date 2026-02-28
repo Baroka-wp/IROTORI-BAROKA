@@ -16,9 +16,6 @@ const nextConfig: NextConfig = {
     BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL,
     APP_URL: process.env.APP_URL,
   },
-  future: {
-    tailwindV4: true,
-  },
 };
 
 export default nextConfig;
