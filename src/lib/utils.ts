@@ -13,7 +13,7 @@ export function formatDate(date: string | Date) {
   });
 }
 
-export type PostType = "blog" | "model" | "ebook" | "note" | "quote";
+export type PostType = "blog" | "model" | "ebook" | "note" | "quote" | "video";
 
 export interface Post {
   id: string;
@@ -23,6 +23,11 @@ export interface Post {
   content: string;
   status: "draft" | "published";
   tags?: string;
+  description?: string;
+  coverImage?: string;
+  downloadUrl?: string;
+  videoUrl?: string;
+  playlist?: string;
   createdAt: string;
   updatedAt: string;
 }
