@@ -18,6 +18,9 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
   onCancel,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [playlists, setPlaylists] = useState<string[]>([]);
+  const [newPlaylist, setNewPlaylist] = useState('');
+  const [showNewPlaylist, setShowNewPlaylist] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -82,6 +85,21 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
         });
     }
   }, [slug, type]);
+
+  // Fetch existing playlists for videos
+  useEffect(() => {
+    if (type === 'video') {
+      fetch('/api/videos?status=published')
+        .then(res => res.json())
+        .then(data => {
+          const uniquePlaylists = Array.from(
+            new Set((data.data || []).map((v: any) => v.playlist).filter(Boolean))
+          ) as string[];
+          setPlaylists(uniquePlaylists);
+        })
+        .catch(err => console.error('Error fetching playlists:', err));
+    }
+  }, [type]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -421,13 +439,42 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                       <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
                         Playlist / Catégorie
                       </label>
-                      <input
-                        type="text"
-                        value={formData.playlist}
-                        onChange={(e) => updateField('playlist', e.target.value)}
-                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
-                        placeholder="Nom de la playlist"
-                      />
+                      <div className="flex gap-2">
+                        <select
+                          value={showNewPlaylist ? '' : formData.playlist}
+                          onChange={(e) => {
+                            if (e.target.value === '__new__') {
+                              setShowNewPlaylist(true);
+                              setFormData({ ...formData, playlist: '' });
+                            } else {
+                              setShowNewPlaylist(false);
+                              updateField('playlist', e.target.value);
+                            }
+                          }}
+                          className="flex-1 bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        >
+                          <option value="">Sélectionner une playlist</option>
+                          {playlists.map((playlist) => (
+                            <option key={playlist} value={playlist}>{playlist}</option>
+                          ))}
+                          <option value="__new__">+ Créer une nouvelle playlist</option>
+                        </select>
+                      </div>
+                      {showNewPlaylist && (
+                        <input
+                          type="text"
+                          value={formData.playlist}
+                          onChange={(e) => updateField('playlist', e.target.value)}
+                          className="w-full mt-2 bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                          placeholder="Nom de la nouvelle playlist"
+                          autoFocus
+                        />
+                      )}
+                      {playlists.length > 0 && !showNewPlaylist && formData.playlist && (
+                        <p className="text-xs text-[var(--text-color)]/40 mt-1">
+                          Playlist actuelle : {formData.playlist}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
