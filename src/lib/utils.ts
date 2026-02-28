@@ -17,6 +17,8 @@ export function formatDate(date: string | Date) {
 export type ReflexionTag = "spiritualite" | "entrepreneurial" | "management" | "education";
 export type VideoTag = "philosophie" | "spiritualite" | "mindset";
 export type ContentStatus = "draft" | "published";
+export type ProjectStatus = "in_progress" | "completed" | "archived";
+export type ProjectCategory = "tech" | "business" | "social" | "education" | "other";
 
 // Réflexion
 export interface Reflexion {
@@ -54,35 +56,60 @@ export interface Ebook {
   title: string;
   slug: string;
   subtitle?: string;
+  shortDescription?: string;
   description?: string;
   coverImage?: string;
   downloadUrl?: string;
-  price: number; // en centimes (0 = gratuit)
+  price: number; // en FCFA (0 = gratuit)
   status: ContentStatus;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// Note de lecture
-export interface Note {
+// Projet
+export interface Project {
   id: string;
   title: string;
   slug: string;
-  content: string;
-  bookTitle?: string;
-  author?: string;
-  status: ContentStatus;
-  publishedAt?: string;
+  description?: string;
+  longDescription?: string;
+  coverImage?: string;
+  websiteUrl?: string;
+  githubUrl?: string;
+  demoUrl?: string;
+  status: ProjectStatus;
+  startDate?: string;
+  endDate?: string;
+  technologies?: string;
+  category?: ProjectCategory;
+  teamMembers?: string;
+  partners?: string;
+  featured: boolean;
+  order: number;
   createdAt: string;
   updatedAt: string;
 }
 
-// Type union pour le routing
-export type ContentItem = Reflexion | Video | Ebook | Note;
+// Helper pour le statut d'un projet
+export function getProjectStatusLabel(status: ProjectStatus): string {
+  switch (status) {
+    case 'in_progress': return 'En cours';
+    case 'completed': return 'Terminé';
+    case 'archived': return 'Archivé';
+    default: return status;
+  }
+}
 
-// Helper pour vérifier le prix
-export function formatPrice(priceInCents: number): string {
-  if (priceInCents === 0) return "Gratuit";
-  return `${(priceInCents / 100).toFixed(2)} €`;
+// Helper pour la catégorie d'un projet
+export function getProjectCategoryLabel(category?: ProjectCategory | string): string {
+  if (!category) return 'Autre';
+  const labels: Record<string, string> = {
+    tech: 'Technologie',
+    business: 'Business',
+    social: 'Social',
+    education: 'Éducation',
+    other: 'Autre',
+  };
+  return labels[category] || category;
 }

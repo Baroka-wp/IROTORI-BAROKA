@@ -19,7 +19,8 @@ import {
   Trash2,
   CheckCircle,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Target
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,9 +35,9 @@ interface SidebarProps {
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
   { id: 'reflexions', label: 'Réflexions', icon: FileText },
-  { id: 'videos', label: 'Vidéos', icon: Video },
-  { id: 'ebooks', label: 'E-books', icon: Library },
-  { id: 'notes', label: 'Notes', icon: Book },
+  { id: 'videos', label: 'Webinaire', icon: Video },
+  { id: 'ebooks', label: 'Livres', icon: Library },
+  { id: 'projects', label: 'Projets', icon: Target },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, isOpen, onClose, onLogout, userEmail }) => (

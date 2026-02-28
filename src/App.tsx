@@ -6,7 +6,7 @@ import { HomePage } from './pages/Home';
 import { ContentListPage } from './pages/ContentList';
 import { PostPage } from './pages/Post';
 import AdminDashboard from './pages/admin/Dashboard';
-import { Reflexion, Video, Ebook, Note } from './lib/utils';
+import { Reflexion, Video, Ebook, Project } from './lib/utils';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState(() => {
@@ -26,7 +26,7 @@ export default function App() {
   const [reflexions, setReflexions] = useState<Reflexion[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Admin mode
   const [isAdminRoute, setIsAdminRoute] = useState(false);
@@ -40,22 +40,22 @@ export default function App() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const [reflexionsRes, videosRes, ebooksRes, notesRes] = await Promise.all([
+        const [reflexionsRes, videosRes, ebooksRes, projectsRes] = await Promise.all([
           fetch('/api/reflexions?status=published').then(r => r.json()),
           fetch('/api/videos?status=published').then(r => r.json()),
           fetch('/api/ebooks?status=published').then(r => r.json()),
-          fetch('/api/notes?status=published').then(r => r.json()),
+          fetch('/api/projects?status=completed').then(r => r.json()),
         ]);
 
         console.log('Fetched reflexions:', reflexionsRes.data);
         console.log('Fetched videos:', videosRes.data);
         console.log('Fetched ebooks:', ebooksRes.data);
-        console.log('Fetched notes:', notesRes.data);
+        console.log('Fetched projects:', projectsRes.data);
 
         setReflexions(reflexionsRes.data || []);
         setVideos(videosRes.data || []);
         setEbooks(ebooksRes.data || []);
-        setNotes(notesRes.data || []);
+        setProjects(projectsRes.data || []);
       } catch (error) {
         console.error('Error fetching content:', error);
       }
@@ -120,7 +120,7 @@ export default function App() {
       return <ContentListPage type="library" title="Livres" items={ebooks} onNavigate={navigate} />;
     }
 
-    // Projets page (placeholder)
+    // Projets page
     if (currentPage === 'projets') {
       return (
         <div className="space-y-32 pb-32">
@@ -153,18 +153,86 @@ export default function App() {
               </motion.div>
             </div>
           </motion.div>
-          <div className="max-w-[680px] mx-auto px-4 pb-32">
-            <p className="text-center text-[var(--text-color)]/60 text-lg">
-              Cette page est en cours de construction.
-            </p>
+          <div className="max-w-6xl mx-auto px-4 pb-32">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {projects.length > 0 ? (
+                projects.map((project) => (
+                  <article
+                    key={project.id}
+                    className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
+                    onClick={() => navigate(`post/${project.slug}`)}
+                  >
+                    {project.coverImage ? (
+                      <img src={project.coverImage} alt={project.title} className="w-full h-64 object-cover" />
+                    ) : (
+                      <div className="w-full h-64 bg-[var(--bg-color)] flex items-center justify-center">
+                        <div className="text-[var(--text-color)]/20">
+                          <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          project.status === 'completed' ? 'bg-green-500/10 text-green-500' :
+                          project.status === 'in_progress' ? 'bg-blue-500/10 text-blue-500' :
+                          'bg-gray-500/10 text-gray-500'
+                        }`}>
+                          {project.status === 'completed' ? 'Terminé' :
+                           project.status === 'in_progress' ? 'En cours' : 'Archivé'}
+                        </span>
+                        {project.technologies && (
+                          <span className="text-xs text-[var(--text-color)]/40">
+                            {project.technologies.split(',')[0]}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2">
+                        {project.title}
+                      </h3>
+                      {project.description && (
+                        <p className="text-sm text-[var(--text-color)]/60 line-clamp-3 mb-4">
+                          {project.description}
+                        </p>
+                      )}
+                      <div className="flex gap-2">
+                        {project.websiteUrl && (
+                          <a
+                            href={project.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-[#6B1A2A] hover:underline"
+                          >
+                            Site web
+                          </a>
+                        )}
+                        {project.githubUrl && (
+                          <a
+                            href={project.githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-sm text-[#6B1A2A] hover:underline"
+                          >
+                            GitHub
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-20">
+                  Aucun projet pour le moment.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       );
-    }
-
-    // Notes page (kept for backward compatibility)
-    if (currentPage === 'notes') {
-      return <ContentListPage type="notes" title="Notes de lecture" items={notes} onNavigate={navigate} />;
     }
 
     // Single post page

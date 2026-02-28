@@ -91,7 +91,7 @@ async function startServer() {
   createContentRoutes('reflexion');
   createContentRoutes('video');
   createContentRoutes('ebook');
-  createContentRoutes('note');
+  createContentRoutes('project');
 
   // Auth
   app.post("/api/auth/login", async (req, res) => {

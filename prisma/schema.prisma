@@ -20,8 +20,8 @@ model User {
 model Subscriber {
   id        String   @id @default(cuid())
   email     String   @unique
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Réflexions (Articles de blog / Pensées)
@@ -72,7 +72,7 @@ model Ebook {
   description   String?  // Description détaillée (éditeur riche)
   coverImage    String?  // URL de la couverture
   downloadUrl   String?  // Lien de téléchargement
-  price         Int      @default(0) // Prix en centimes (0 = gratuit)
+  price         Int      @default(0) // Prix en FCFA (0 = gratuit)
   status        String   @default("draft")
   publishedAt   DateTime?
   createdAt     DateTime @default(now())
@@ -83,19 +83,31 @@ model Ebook {
   @@index([price])
 }
 
-// Notes de lecture
-model Note {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String
-  bookTitle   String?  // Livre de référence
-  author      String?  // Auteur du livre
-  status      String   @default("draft")
-  publishedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// Projets
+model Project {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  description   String?  // Description courte
+  longDescription String? // Description détaillée (éditeur riche)
+  coverImage    String?  // URL de la couverture
+  websiteUrl    String?  // Site web du projet
+  githubUrl     String?  // GitHub (pour les projets tech)
+  demoUrl       String?  // Lien de démo
+  status        String   @default("in_progress") // in_progress, completed, archived
+  startDate     DateTime?
+  endDate       DateTime?
+  technologies  String?  // Comma separated: React, Node.js, etc.
+  category      String?  // tech, business, social, etc.
+  teamMembers   String?  // JSON ou comma separated des membres
+  partners      String?  // JSON ou comma separated des partenaires
+  featured      Boolean  @default(false) // Mettre en avant
+  order         Int      @default(0) // Ordre d'affichage
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([slug])
   @@index([status])
+  @@index([category])
+  @@index([featured])
 }

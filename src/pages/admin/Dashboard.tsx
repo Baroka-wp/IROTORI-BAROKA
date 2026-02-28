@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Sidebar, StatCard, ContentTable } from '../../components/admin/Sidebar';
 import { ContentEditor } from '../../components/admin/ContentEditor';
 import { LoginPage } from './Login';
-import { BarChart3, FileText, Video, Library, Book, Plus, Menu } from 'lucide-react';
-import { Reflexion, Video as VideoType, Ebook, Note } from '../../lib/utils';
+import { BarChart3, FileText, Video, Library, Book, Plus, Menu, Target } from 'lucide-react';
+import { Reflexion, Video as VideoType, Ebook, Project } from '../../lib/utils';
 
-type ContentType = 'reflexion' | 'video' | 'ebook' | 'note';
+type ContentType = 'reflexion' | 'video' | 'ebook' | 'project';
 
 export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [reflexions, setReflexions] = useState<Reflexion[]>([]);
   const [videos, setVideos] = useState<VideoType[]>([]);
   const [ebooks, setEbooks] = useState<Ebook[]>([]);
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   // Editor
   const [editorOpen, setEditorOpen] = useState(false);
@@ -28,17 +28,17 @@ export default function AdminDashboard() {
 
   const fetchContent = async () => {
     try {
-      const [reflexionsRes, videosRes, ebooksRes, notesRes] = await Promise.all([
+      const [reflexionsRes, videosRes, ebooksRes, projectsRes] = await Promise.all([
         fetch('/api/reflexions').then(r => r.json()),
         fetch('/api/videos').then(r => r.json()),
         fetch('/api/ebooks').then(r => r.json()),
-        fetch('/api/notes').then(r => r.json()),
+        fetch('/api/projects').then(r => r.json()),
       ]);
 
       setReflexions(reflexionsRes.data || []);
       setVideos(videosRes.data || []);
       setEbooks(ebooksRes.data || []);
-      setNotes(notesRes.data || []);
+      setProjects(projectsRes.data || []);
     } catch (error) {
       console.error('Error fetching content:', error);
     }
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
     setReflexions([]);
     setVideos([]);
     setEbooks([]);
-    setNotes([]);
+    setProjects([]);
     setCurrentPage('dashboard');
   };
 
@@ -137,12 +137,12 @@ export default function AdminDashboard() {
     reflexions: reflexions.length,
     videos: videos.length,
     ebooks: ebooks.length,
-    notes: notes.length,
+    projects: projects.length,
     published: [
       ...reflexions.filter(r => r.status === 'published'),
       ...videos.filter(v => v.status === 'published'),
       ...ebooks.filter(e => e.status === 'published'),
-      ...notes.filter(n => n.status === 'published'),
+      ...projects.filter(p => p.status === 'completed'),
     ].length,
   };
 
@@ -159,21 +159,21 @@ export default function AdminDashboard() {
               color="bg-blue-500"
             />
             <StatCard
-              title="Vidéos"
+              title="Webinaires"
               value={stats.videos}
               icon={Video}
               color="bg-red-500"
             />
             <StatCard
-              title="E-books"
+              title="Livres"
               value={stats.ebooks}
               icon={Library}
               color="bg-green-500"
             />
             <StatCard
-              title="Notes"
-              value={stats.notes}
-              icon={Book}
+              title="Projets"
+              value={stats.projects}
+              icon={Target}
               color="bg-purple-500"
             />
             <StatCard
@@ -258,17 +258,17 @@ export default function AdminDashboard() {
       return (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-medium text-[var(--text-color)]">E-books</h2>
+            <h2 className="text-2xl font-medium text-[var(--text-color)]">Livres</h2>
             <button
               onClick={() => openEditor('ebook')}
               className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
             >
               <Plus size={18} />
-              Nouvel E-book
+              Nouveau livre
             </button>
           </div>
           <ContentTable
-            title="Tous les E-books"
+            title="Tous les livres"
             items={ebooks}
             onEdit={(slug) => openEditor('ebook', slug)}
             onDelete={(slug) => handleDelete('ebook', slug)}
@@ -278,24 +278,24 @@ export default function AdminDashboard() {
       );
     }
 
-    if (currentPage === 'notes') {
+    if (currentPage === 'projects') {
       return (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-medium text-[var(--text-color)]">Notes de lecture</h2>
+            <h2 className="text-2xl font-medium text-[var(--text-color)]">Projets</h2>
             <button
-              onClick={() => openEditor('note')}
+              onClick={() => openEditor('project')}
               className="flex items-center gap-2 bg-[#6B1A2A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
             >
               <Plus size={18} />
-              Nouvelle note
+              Nouveau projet
             </button>
           </div>
           <ContentTable
-            title="Toutes les notes"
-            items={notes}
-            onEdit={(slug) => openEditor('note', slug)}
-            onDelete={(slug) => handleDelete('note', slug)}
+            title="Tous les projets"
+            items={projects}
+            onEdit={(slug) => openEditor('project', slug)}
+            onDelete={(slug) => handleDelete('project', slug)}
             columns={['Titre', 'Statut', 'Date']}
           />
         </div>

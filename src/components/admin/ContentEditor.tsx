@@ -3,7 +3,7 @@ import Editor from '../../components/Editor';
 import { X } from 'lucide-react';
 
 interface ContentEditorProps {
-  type: 'reflexion' | 'video' | 'ebook' | 'note';
+  type: 'reflexion' | 'video' | 'ebook' | 'project';
   slug?: string;
   initialData?: any;
   onSave: (data: any) => Promise<void>;
@@ -26,15 +26,23 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
     description: '',
     content: '',
     resume: '',
+    longDescription: '',
     tags: '',
     thumbnail: '',
     videoUrl: '',
     playlist: '',
     coverImage: '',
     downloadUrl: '',
+    websiteUrl: '',
+    githubUrl: '',
+    demoUrl: '',
     price: 0,
     bookTitle: '',
     author: '',
+    technologies: '',
+    category: '',
+    teamMembers: '',
+    partners: '',
     status: 'draft',
   });
 
@@ -104,6 +112,18 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
       dataToSend.coverImage = formData.coverImage;
       dataToSend.downloadUrl = formData.downloadUrl;
       dataToSend.price = formData.price;
+    } else if (type === 'project') {
+      dataToSend.description = formData.description;
+      dataToSend.longDescription = formData.longDescription;
+      dataToSend.coverImage = formData.coverImage;
+      dataToSend.websiteUrl = formData.websiteUrl;
+      dataToSend.githubUrl = formData.githubUrl;
+      dataToSend.demoUrl = formData.demoUrl;
+      dataToSend.status = formData.status;
+      dataToSend.technologies = formData.technologies;
+      dataToSend.category = formData.category;
+      dataToSend.teamMembers = formData.teamMembers;
+      dataToSend.partners = formData.partners;
     } else if (type === 'note') {
       dataToSend.content = formData.content;
       dataToSend.bookTitle = formData.bookTitle;
@@ -256,6 +276,139 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                     <Editor
                       content={formData.description}
                       onChange={(content) => updateField('description', content)}
+                    />
+                  </div>
+                </>
+              )}
+
+              {type === 'project' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Description courte
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => updateField('description', e.target.value)}
+                      rows={3}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="Description courte du projet..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Description détaillée
+                    </label>
+                    <Editor
+                      content={formData.longDescription}
+                      onChange={(content) => updateField('longDescription', content)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Site web
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.websiteUrl}
+                        onChange={(e) => updateField('websiteUrl', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        GitHub
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.githubUrl}
+                        onChange={(e) => updateField('githubUrl', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="https://github.com/..."
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Lien de démo
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.demoUrl}
+                        onChange={(e) => updateField('demoUrl', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        URL de la couverture
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.coverImage}
+                        onChange={(e) => updateField('coverImage', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Technologies
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.technologies}
+                        onChange={(e) => updateField('technologies', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                        placeholder="React, Node.js, TypeScript..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                        Catégorie
+                      </label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => updateField('category', e.target.value)}
+                        className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      >
+                        <option value="">Sélectionner</option>
+                        <option value="tech">Technologie</option>
+                        <option value="business">Business</option>
+                        <option value="social">Social</option>
+                        <option value="education">Éducation</option>
+                        <option value="other">Autre</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Membres de l'équipe
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.teamMembers}
+                      onChange={(e) => updateField('teamMembers', e.target.value)}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="Jean Dupont, Marie Martin..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
+                      Partenaires
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.partners}
+                      onChange={(e) => updateField('partners', e.target.value)}
+                      className="w-full bg-[var(--card-bg)] border border-[var(--border-color)] px-4 py-3 text-base text-[var(--text-color)] focus:outline-none focus:border-[#6B1A2A] rounded-lg"
+                      placeholder="Entreprise A, Organisation B..."
                     />
                   </div>
                 </>
