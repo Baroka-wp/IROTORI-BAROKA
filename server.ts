@@ -78,6 +78,17 @@ async function startServer() {
     res.json(posts);
   });
 
+  // Single post by slug (for App.tsx PostPage component)
+  app.get("/api/post", async (req, res) => {
+    const { slug } = req.query;
+    if (!slug) return res.status(400).json({ error: "Slug required" });
+    const post = await prisma.post.findUnique({
+      where: { slug: slug as string },
+    });
+    if (!post) return res.status(404).json({ error: "Post not found" });
+    res.json(post);
+  });
+
   app.get("/api/posts/:slug", async (req, res) => {
     const post = await prisma.post.findUnique({
       where: { slug: req.params.slug },
