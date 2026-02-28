@@ -121,11 +121,17 @@ export default function AdminDashboard() {
   const handleDelete = async (type: ContentType, slug: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?')) return;
 
-    const res = await fetch(`/api/${type}/${slug}`, { method: 'DELETE' });
+    const res = await fetch(`/api/${type}s`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+    });
+
     if (res.ok) {
       fetchContent();
     } else {
-      alert('Erreur lors de la suppression');
+      const error = await res.json();
+      alert('Erreur lors de la suppression: ' + (error.error || 'Erreur inconnue'));
     }
   };
 

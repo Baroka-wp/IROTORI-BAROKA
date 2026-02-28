@@ -89,14 +89,20 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/ebooks/:slug - Delete ebook (auth required)
-export async function DELETE(request: NextRequest, context: any) {
+// DELETE /api/ebooks - Delete ebook (auth required)
+export async function DELETE(request: NextRequest) {
   if (!(await authenticate())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const { slug } = await context.params;
+    const body = await request.json();
+    const { slug } = body;
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+    }
+
     await prisma.ebook.delete({ where: { slug } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

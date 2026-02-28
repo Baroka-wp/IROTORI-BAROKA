@@ -87,14 +87,20 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/projects/:slug - Delete project (auth required)
-export async function DELETE(request: NextRequest, context: any) {
+// DELETE /api/projects - Delete project (auth required)
+export async function DELETE(request: NextRequest) {
   if (!(await authenticate())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const { slug } = await context.params;
+    const body = await request.json();
+    const { slug } = body;
+
+    if (!slug) {
+      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+    }
+
     await prisma.project.delete({ where: { slug } });
     return NextResponse.json({ success: true });
   } catch (error: any) {
