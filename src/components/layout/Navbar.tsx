@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { Menu, X, Sun, Moon, Settings } from 'lucide-react';
@@ -11,10 +11,7 @@ interface NavItem {
 }
 
 interface NavbarProps {
-  user: any;
-  theme: string;
-  onToggleTheme: () => void;
-  onNavigate: (page: string) => void;
+  user: { email: string } | null;
 }
 
 const navItems: NavItem[] = [
@@ -24,8 +21,23 @@ const navItems: NavItem[] = [
   { name: 'Projets', path: '/projets' },
 ];
 
-export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNavigate }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // Lit le thème sauvegardé et applique la classe HTML
+  useEffect(() => {
+    const saved = (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+    setTheme(saved);
+    document.documentElement.classList.toggle('dark', saved === 'dark');
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('theme', next);
+    document.documentElement.classList.toggle('dark', next === 'dark');
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-color)]/80 backdrop-blur-md border-b border-[var(--border-color)]">
@@ -49,7 +61,9 @@ export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNa
             </Link>
           ))}
           <button
-            onClick={onToggleTheme}
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
             className="p-1.5 text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -57,6 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNa
           {user && (
             <Link
               href="/admin"
+              aria-label="Tableau de bord admin"
               className="p-1.5 text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors"
             >
               <Settings size={18} />
@@ -67,12 +82,20 @@ export const Navbar: React.FC<NavbarProps> = ({ user, theme, onToggleTheme, onNa
         {/* Mobile Navigation Toggle */}
         <div className="flex items-center gap-4 md:hidden">
           <button
-            onClick={onToggleTheme}
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
             className="p-1.5 text-[var(--text-color)]/40"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <button className="text-[var(--text-color)]" onClick={() => setIsOpen(!isOpen)}>
+          <button
+            type="button"
+            aria-label={isOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={isOpen}
+            className="text-[var(--text-color)]"
+            onClick={() => setIsOpen(!isOpen)}
+          >
             {isOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>

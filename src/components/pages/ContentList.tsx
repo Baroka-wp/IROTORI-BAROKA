@@ -1,13 +1,16 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Book, FileText, PlayCircle } from 'lucide-react';
 import { formatDate, Reflexion, Video, Ebook } from '../../lib/utils';
+import { HeroSection } from '../ui/HeroSection';
 
 interface ContentListPageProps {
   type: 'reflexion' | 'video' | 'notes' | 'library';
   title?: string;
   items: (Reflexion | Video | Ebook)[];
-  onNavigate: (page: string) => void;
 }
 
 const reflexionSubcategories = [
@@ -18,7 +21,8 @@ const reflexionSubcategories = [
   { id: 'education', name: 'Éducation' },
 ];
 
-export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, items, onNavigate }) => {
+export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, items }) => {
+  const router = useRouter();
   const [videoPlaylist, setVideoPlaylist] = useState<string>('');
   const [videoItems, setVideoItems] = useState<Video[]>([]);
   const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
@@ -72,36 +76,17 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
     
     return (
       <div className="space-y-32 pb-32">
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5 }}
-          className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
+        <HeroSection
+          imageSrc="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=1920&h=1080"
+          imageAlt="Library"
         >
-          <img
-            src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=1920&h=1080"
-            alt="Library"
-            className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="space-y-6 max-w-4xl"
-            >
-              <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
-                {displayTitle}
-              </h1>
-              <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
-                Des ressources pour transformer votre vie
-              </p>
-            </motion.div>
-          </div>
-        </motion.div>
+          <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
+            {displayTitle}
+          </h1>
+          <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
+            Des ressources pour transformer votre vie
+          </p>
+        </HeroSection>
 
         <div className="max-w-6xl mx-auto px-4 pb-32">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -112,8 +97,8 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                   role="link"
                   tabIndex={0}
                   className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2"
-                  onClick={() => onNavigate(`post/${ebook.slug}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${ebook.slug}`); } }}
+                  onClick={() => router.push(`/post/${ebook.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${ebook.slug}`); } }}
                 >
                   {ebook.coverImage ? (
                     <img src={ebook.coverImage} alt={ebook.title} className="w-full h-80 object-cover" />
@@ -168,36 +153,17 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
     if (!videoPlaylist) {
       return (
         <div className="space-y-32 pb-32">
-          {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5 }}
-            className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
+          <HeroSection
+            imageSrc="https://res.cloudinary.com/baroka/image/upload/v1772315789/austin-distel-VCFxt2yT1eQ-unsplash_jkhvxq.jpg"
+            imageAlt="Vidéos"
           >
-            <img
-              src="https://res.cloudinary.com/baroka/image/upload/v1772315789/austin-distel-VCFxt2yT1eQ-unsplash_jkhvxq.jpg"
-              alt="Vidéos"
-              className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="space-y-6 max-w-4xl"
-              >
-                <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
-                  {displayTitle}
-                </h1>
-                <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
-                  Des webinaires sur des sujets divers <br /> (Ingenierie web | IA | Technologie | spirituels )
-                </p>
-              </motion.div>
-            </div>
-          </motion.div>
+            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
+              {displayTitle}
+            </h1>
+            <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
+              Des webinaires sur des sujets divers <br /> (Ingenierie web | IA | Technologie | spirituels )
+            </p>
+          </HeroSection>
 
           <div className="max-w-6xl mx-auto px-4 pb-32">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -234,40 +200,21 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
 
     return (
       <div className="space-y-32 pb-32">
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.5 }}
-          className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
+        <HeroSection
+          imageSrc="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=1920&h=1080"
+          imageAlt={videoPlaylist}
         >
-          <img
-            src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=1920&h=1080"
-            alt={videoPlaylist}
-            className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="space-y-6 max-w-4xl"
-            >
-              <button
-                onClick={() => { setVideoPlaylist(''); setVideoItems([]); }}
-                className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
-              >
-                <ArrowLeft size={20} />
-                Choisir une autre catégorie
-              </button>
-              <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
-                {videoPlaylist}
-              </h1>
-            </motion.div>
-          </div>
-        </motion.div>
+          <button
+            onClick={() => { setVideoPlaylist(''); setVideoItems([]); }}
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors mb-4"
+          >
+            <ArrowLeft size={20} />
+            Choisir une autre catégorie
+          </button>
+          <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
+            {videoPlaylist}
+          </h1>
+        </HeroSection>
 
         <div className="max-w-6xl mx-auto px-4 pb-32">
           {loading ? (
@@ -284,8 +231,8 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                   role="link"
                   tabIndex={0}
                   className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2"
-                  onClick={() => onNavigate(`post/${video.slug}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${video.slug}`); } }}
+                  onClick={() => router.push(`/post/${video.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${video.slug}`); } }}
                 >
                   {video.thumbnail ? (
                     <div className="relative w-full">
@@ -323,36 +270,17 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
   // Reflexion Page with subcategories
   return (
     <div className="space-y-32 pb-32">
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
+      <HeroSection
+        imageSrc="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1920&h=1080"
+        imageAlt="Réflexions"
       >
-        <img
-          src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1920&h=1080"
-          alt="Réflexions"
-          className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="space-y-6 max-w-4xl"
-          >
-            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
-              {displayTitle}
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
-              Principes et structures pour clarifier votre pensée
-            </p>
-          </motion.div>
-        </div>
-      </motion.div>
+        <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
+          {displayTitle}
+        </h1>
+        <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
+          Principes et structures pour clarifier votre pensée
+        </p>
+      </HeroSection>
 
       <div className="max-w-[680px] mx-auto px-4 pb-32">
         {/* Subcategory filters */}
@@ -374,7 +302,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
         <div className="space-y-16">
           {postsBySubcategory.length > 0 ? (
             postsBySubcategory.map((reflexion) => (
-              <article key={reflexion.id} role="link" tabIndex={0} className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm" onClick={() => onNavigate(`post/${reflexion.slug}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${reflexion.slug}`); } }}>
+              <article key={reflexion.id} role="link" tabIndex={0} className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm" onClick={() => router.push(`/post/${reflexion.slug}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${reflexion.slug}`); } }}>
                 <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(reflexion.createdAt)}</p>
                 <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
                   {reflexion.title}

@@ -1,52 +1,20 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import React from 'react';
 import { formatDate, Reflexion, Video, Ebook } from '../../lib/utils';
 import { ArrowRight } from 'lucide-react';
 
-interface PostPageProps {
-  slug: string;
+interface PostDisplayProps {
+  content: Reflexion | Video | Ebook;
 }
 
-export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
-  const [content, setContent] = useState<Reflexion | Video | Ebook | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Try to fetch from all endpoints
-    const fetchContent = async () => {
-      const endpoints = ['/api/reflexions', '/api/videos', '/api/ebooks'];
-
-      for (const endpoint of endpoints) {
-        try {
-          const res = await fetch(`${endpoint}/${encodeURIComponent(slug)}`);
-          if (res.ok) {
-            const data = await res.json();
-            setContent(data);
-            setLoading(false);
-            return;
-          }
-        } catch (err) {
-          // Continue to next endpoint silently
-          continue;
-        }
-      }
-
-      setError('Contenu non trouvé');
-      setLoading(false);
-    };
-
-    fetchContent();
-  }, [slug]);
-
-  if (loading) return <div className="py-20 text-center font-light text-[var(--text-color)]/40">Chargement...</div>;
-  if (error || !content) return <div className="py-20 text-center font-light text-[var(--text-color)]/40">{error || 'Contenu non trouvé.'}</div>;
-
-  // Determine content type
+export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
+  // Détermine le type de contenu par duck-typing sur les champs
   const isReflexion = 'content' in content && !('videoUrl' in content) && !('downloadUrl' in content);
   const isVideo = 'videoUrl' in content;
   const isEbook = 'downloadUrl' in content && 'price' in content;
 
-  // Reflexion
+  // ─── Réflexion ──────────────────────────────────────────────────────────────
   if (isReflexion) {
     const reflexion = content as Reflexion;
     return (
@@ -59,7 +27,7 @@ export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
             {reflexion.title}
           </h1>
           {reflexion.tags && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {reflexion.tags.split(',').map(tag => (
                 <span key={tag} className="text-xs uppercase tracking-wider px-2 py-1 bg-[var(--card-bg)] text-[var(--text-color)]/60 rounded-sm">
                   {tag.trim()}
@@ -69,61 +37,32 @@ export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
           )}
         </header>
         <div className="prose max-w-none font-light leading-relaxed text-xl">
+          {/* Le contenu HTML est sanitisé à l'écriture dans les API routes (lib/sanitize.ts) */}
           <div dangerouslySetInnerHTML={{ __html: reflexion.content }} />
         </div>
       </article>
     );
   }
 
-  // Video
+  // ─── Vidéo ──────────────────────────────────────────────────────────────────
   if (isVideo) {
     const video = content as Video;
 
-    // Parse video URL for embed (YouTube or Google Drive)
-    const getVideoEmbed = (url?: string) => {
+    const getVideoEmbed = (url?: string): string | null => {
       if (!url) return null;
-
-      // YouTube - Short URL (youtu.be/VIDEO_ID)
       const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
-      if (shortMatch) {
-        return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&rel=0`;
-      }
-
-      // YouTube - Standard URL (youtube.com/watch?v=VIDEO_ID)
+      if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?rel=0`;
       const watchMatch = url.match(/[?&]v=([^?&]+)/);
-      if (watchMatch) {
-        return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&rel=0`;
-      }
-
-      // YouTube - Live URL (youtube.com/live/VIDEO_ID)
+      if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?rel=0`;
       const liveMatch = url.match(/youtube\.com\/live\/([^?&]+)/);
-      if (liveMatch) {
-        return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1&rel=0`;
-      }
-
-      // YouTube - Embed URL (youtube.com/embed/VIDEO_ID)
+      if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?rel=0`;
       const embedMatch = url.match(/youtube\.com\/embed\/([^?&]+)/);
-      if (embedMatch) {
-        return url.includes('?') ? `${url}&autoplay=1&rel=0` : `${url}?autoplay=1&rel=0`;
-      }
-
-      // YouTube - Shorts URL (youtube.com/shorts/VIDEO_ID)
+      if (embedMatch) return url.includes('?') ? `${url}&rel=0` : `${url}?rel=0`;
       const shortsMatch = url.match(/youtube\.com\/shorts\/([^?&]+)/);
-      if (shortsMatch) {
-        return `https://www.youtube.com/embed/${shortsMatch[1]}?autoplay=1&rel=0`;
-      }
-
-      // Google Drive - Preview URL
+      if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}?rel=0`;
       const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-      if (driveMatch) {
-        return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
-      }
-
-      // Google Drive - Already in preview format
-      if (url.includes('drive.google.com') && url.includes('/preview')) {
-        return url;
-      }
-
+      if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+      if (url.includes('drive.google.com') && url.includes('/preview')) return url;
       return null;
     };
 
@@ -160,23 +99,28 @@ export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              loading="lazy"
+              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             />
           </div>
         ) : video.thumbnail ? (
-          <img src={video.thumbnail} alt={video.title} className="w-full h-auto mb-12 rounded-lg" />
+          <img src={video.thumbnail} alt={video.title} className="w-full h-auto mb-12 rounded-lg" loading="lazy" />
         ) : null}
 
         {video.resume && (
           <div className="pt-8 border-t border-[var(--border-color)]">
             <h3 className="text-xl font-medium text-[#6B1A2A] mb-4">Résumé</h3>
-            <div className="font-light leading-relaxed text-lg text-[var(--text-color)]/70" dangerouslySetInnerHTML={{ __html: video.resume }} />
+            <div
+              className="font-light leading-relaxed text-lg text-[var(--text-color)]/70"
+              dangerouslySetInnerHTML={{ __html: video.resume }}
+            />
           </div>
         )}
       </article>
     );
   }
 
-  // Ebook
+  // ─── E-book ─────────────────────────────────────────────────────────────────
   if (isEbook) {
     const ebook = content as Ebook;
     return (
@@ -195,11 +139,10 @@ export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
 
         {ebook.coverImage && (
           <div className="mb-8">
-            <img src={ebook.coverImage} alt={ebook.title} className="w-full h-auto rounded-lg" />
+            <img src={ebook.coverImage} alt={ebook.title} className="w-full h-auto rounded-lg" loading="lazy" />
           </div>
         )}
 
-        {/* Prix et bouton de téléchargement sous l'image */}
         <div className="flex items-center justify-between mb-8 pb-8 border-b border-[var(--border-color)]">
           <span className={`text-xl font-medium ${ebook.price === 0 ? 'text-green-500' : 'text-[#6B1A2A]'}`}>
             {ebook.price === 0 ? 'Gratuit' : `${ebook.price} FCFA`}
@@ -229,3 +172,6 @@ export const PostPage: React.FC<PostPageProps> = ({ slug }) => {
 
   return <div className="py-20 text-center">Type de contenu non supporté</div>;
 };
+
+// Rétro-compatibilité — alias vers PostDisplay
+export const PostPage = PostDisplay;

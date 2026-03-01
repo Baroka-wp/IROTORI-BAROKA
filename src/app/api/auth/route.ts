@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { getJwtSecret } from '@/lib/auth';
+import { prisma } from '@/lib/db';
 
 // GET /api/auth - Vérifier l'utilisateur courant
 export async function GET() {
@@ -30,22 +31,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPasswordHash = process.env.ADMIN_PASSWORD;
+  try {
+    // Rechercher l'utilisateur dans la base de données
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  // Fail hard si les variables ne sont pas configurées — évite tout login silencieux par défaut
-  if (!adminEmail || !adminPasswordHash) {
-    console.error('ADMIN_EMAIL ou ADMIN_PASSWORD non défini dans les variables d\'environnement');
-    return NextResponse.json({ error: 'Erreur de configuration serveur' }, { status: 500 });
-  }
+    // Vérifier si l'utilisateur existe
+    if (!user) {
+      return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
+    }
 
-  const emailMatch = email === adminEmail;
-  // S2 FIX : comparaison bcrypt — ADMIN_PASSWORD doit être un hash bcrypt dans le .env
-  // Pour générer le hash : node -e "require('bcryptjs').hash('votre_mdp', 12).then(console.log)"
-  const passwordMatch = await bcrypt.compare(password, adminPasswordHash);
+    // Vérifier si l'utilisateur est admin
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Accès non autorisé' }, { status: 403 });
+    }
 
-  if (emailMatch && passwordMatch) {
-    const token = jwt.sign({ email }, getJwtSecret(), { expiresIn: '24h' });
+    // Vérifier le mot de passe
+    const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
+
+    if (!passwordMatch) {
+      return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
+    }
+
+    // Créer le token JWT
+    const token = jwt.sign(
+      { email: user.email, role: user.role },
+      getJwtSecret(),
+      { expiresIn: '24h' }
+    );
 
     const response = NextResponse.json({ success: true });
     response.cookies.set('token', token, {
@@ -57,9 +71,10 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
+  } catch (error) {
+    console.error('Erreur lors de l\'authentification:', error);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
-
-  return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
 }
 
 // DELETE /api/auth - Logout

@@ -10,6 +10,19 @@ export function getJwtSecret(): string {
   return secret;
 }
 
+/** Retourne l'utilisateur courant depuis le cookie JWT, ou null si non connecté */
+export async function getCurrentUser(): Promise<{ email: string } | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+  if (!token) return null;
+  try {
+    const decoded = jwt.verify(token, getJwtSecret()) as { email: string };
+    return { email: decoded.email };
+  } catch {
+    return null;
+  }
+}
+
 /** Vérifie le cookie JWT de l'administrateur */
 export async function authenticate(): Promise<boolean> {
   const cookieStore = await cookies();

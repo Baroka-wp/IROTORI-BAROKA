@@ -1,57 +1,48 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
-import { PostPage } from '@/components/pages/Post';
+import { PostDisplay } from '@/components/pages/Post';
+import { getCurrentUser } from '@/lib/auth';
+import { getContentBySlug } from '@/lib/queries';
 
 interface PostDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default function PostDetailPage({ params }: PostDetailPageProps) {
-  const router = useRouter();
-  const [slug, setSlug] = useState<string>('');
-  const [theme, setTheme] = useState('dark');
-
-  useEffect(() => {
-    params.then(p => {
-      setSlug(p.slug);
-    });
-
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    }
-  }, [params]);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+export async function generateMetadata({ params }: PostDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const content = await getContentBySlug(slug);
+  if (!content) {
+    return { title: 'Contenu non trouvé — IROTORI BAROKA' };
+  }
+  return {
+    title: `${content.title} — IROTORI BAROKA`,
+    description: ('shortDescription' in content && content.shortDescription)
+      ? content.shortDescription
+      : ('description' in content && typeof content.description === 'string')
+        ? content.description.replace(/<[^>]+>/g, '').slice(0, 160)
+        : undefined,
   };
+}
 
-  const navigate = (page: string) => {
-    if (page === 'home') {
-      router.push('/');
-    } else {
-      router.push(`/${page}`);
-    }
-  };
+export default async function PostDetailPage({ params }: PostDetailPageProps) {
+  const { slug } = await params;
 
-  if (!slug) return null;
+  const [user, content] = await Promise.all([
+    getCurrentUser(),
+    getContentBySlug(slug),
+  ]);
+
+  if (!content) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen">
-      <Navbar user={null} theme={theme} onToggleTheme={toggleTheme} onNavigate={navigate} />
+      <Navbar user={user} />
       <main className="min-h-[calc(100vh-200px)]">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <PostPage slug={slug} />
-        </motion.div>
+        <PostDisplay content={content} />
       </main>
       <Footer />
     </div>
