@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight, Book, FileText, PlayCircle } from 'lucide-react';
 import { formatDate, Reflexion, Video, Ebook } from '../../lib/utils';
 
@@ -7,7 +10,6 @@ interface ContentListPageProps {
   type: 'reflexion' | 'video' | 'notes' | 'library';
   title?: string;
   items: (Reflexion | Video | Ebook)[];
-  onNavigate: (page: string) => void;
 }
 
 const reflexionSubcategories = [
@@ -18,7 +20,8 @@ const reflexionSubcategories = [
   { id: 'education', name: 'Éducation' },
 ];
 
-export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, items, onNavigate }) => {
+export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, items }) => {
+  const router = useRouter();
   const [videoPlaylist, setVideoPlaylist] = useState<string>('');
   const [videoItems, setVideoItems] = useState<Video[]>([]);
   const [videoPlaylists, setVideoPlaylists] = useState<string[]>([]);
@@ -112,8 +115,8 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                   role="link"
                   tabIndex={0}
                   className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2"
-                  onClick={() => onNavigate(`post/${ebook.slug}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${ebook.slug}`); } }}
+                  onClick={() => router.push(`/post/${ebook.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${ebook.slug}`); } }}
                 >
                   {ebook.coverImage ? (
                     <img src={ebook.coverImage} alt={ebook.title} className="w-full h-80 object-cover" />
@@ -284,8 +287,8 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                   role="link"
                   tabIndex={0}
                   className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2"
-                  onClick={() => onNavigate(`post/${video.slug}`)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${video.slug}`); } }}
+                  onClick={() => router.push(`/post/${video.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${video.slug}`); } }}
                 >
                   {video.thumbnail ? (
                     <div className="relative w-full">
@@ -374,7 +377,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
         <div className="space-y-16">
           {postsBySubcategory.length > 0 ? (
             postsBySubcategory.map((reflexion) => (
-              <article key={reflexion.id} role="link" tabIndex={0} className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm" onClick={() => onNavigate(`post/${reflexion.slug}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${reflexion.slug}`); } }}>
+              <article key={reflexion.id} role="link" tabIndex={0} className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm" onClick={() => router.push(`/post/${reflexion.slug}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${reflexion.slug}`); } }}>
                 <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(reflexion.createdAt)}</p>
                 <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
                   {reflexion.title}

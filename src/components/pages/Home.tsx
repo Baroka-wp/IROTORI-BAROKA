@@ -1,15 +1,15 @@
+'use client';
+
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { ContentSection } from '../../components/ui/ContentSection';
 import { Newsletter } from '../../components/ui/Newsletter';
-import { CTAButton, SocialLink } from '../../components/ui/Button';
+import { SocialLink } from '../../components/ui/Button';
 
-interface HomePageProps {
-  onNavigate: (page: string) => void;
-}
+export const HomePage: React.FC = () => {
+  const router = useRouter();
 
-export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const reflexionFeatures = [
     { number: "01", title: "Clarifier votre pensée", description: "Identifier les croyances et schémas qui vous limitent" },
     { number: "02", title: "Reprendre le contrôle", description: "Retrouver votre attention et votre capacité d'action" },
@@ -63,7 +63,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Le Mat
               </a>
             </div>
-            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white whitespace-nowrap">
+            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
               IROTORI BAROKA
             </h1>
             <p className="text-xl md:text-2xl text-white/80 font-light tracking-widest uppercase">
@@ -102,7 +102,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         title="Mes réflexions"
         description="Des principes et structures pour clarifier votre pensée et reprendre le contrôle."
         ctaLabel="Lire les réflexions"
-        ctaAction={() => onNavigate('reflexion')}
+        ctaAction={() => router.push('/reflexion')}
         features={reflexionFeatures}
       />
 
@@ -110,7 +110,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         title="Mon E-book"
         description="Une méthode complète pour sortir de la stagnation et reconstruire votre discipline, étape par étape."
         ctaLabel="Voir le livre"
-        ctaAction={() => onNavigate('library')}
+        ctaAction={() => router.push('/library')}
         features={ebookFeatures}
       />
 
@@ -118,7 +118,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         title="Mes Vidéos"
         description="Des webinaires et formations live sur les thématiques philosophiques, spirituelles et développement personnel."
         ctaLabel="Voir les vidéos"
-        ctaAction={() => onNavigate('video')}
+        ctaAction={() => router.push('/video')}
         features={videoFeatures}
       />
 
