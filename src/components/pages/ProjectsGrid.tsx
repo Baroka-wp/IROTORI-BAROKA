@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { Project } from '../../lib/utils';
+import { HeroSection } from '../ui/HeroSection';
 
 interface ProjectsGridProps {
   projects: Project[];
@@ -14,36 +14,17 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
 
   return (
     <div className="space-y-32 pb-32">
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        className="w-full h-[40vh] md:h-[50vh] relative overflow-hidden"
+      <HeroSection
+        imageSrc="https://res.cloudinary.com/baroka/image/upload/v1772310408/dlxmedia-hu-ZrtsGzVW2vk-unsplash_wcmdrv.jpg"
+        imageAlt="Projets"
       >
-        <img
-          src="https://res.cloudinary.com/baroka/image/upload/v1772310408/dlxmedia-hu-ZrtsGzVW2vk-unsplash_wcmdrv.jpg"
-          alt="Projets"
-          className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="space-y-6 max-w-4xl"
-          >
-            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
-              Projets
-            </h1>
-            <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
-              Ce sur quoi je travaille actuellement
-            </p>
-          </motion.div>
-        </div>
-      </motion.div>
+        <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
+          Projets
+        </h1>
+        <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
+          Ce sur quoi je travaille actuellement
+        </p>
+      </HeroSection>
 
       <div className="max-w-6xl mx-auto px-4 pb-32">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

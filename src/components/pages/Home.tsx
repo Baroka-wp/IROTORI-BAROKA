@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ContentSection } from '../../components/ui/ContentSection';
 import { Newsletter } from '../../components/ui/Newsletter';
 import { SocialLink } from '../../components/ui/Button';
+import { HeroSection } from '../../components/ui/HeroSection';
 
 export const HomePage: React.FC = () => {
   const router = useRouter();
@@ -31,47 +32,28 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-32 pb-32">
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        className="w-full h-[50vh] md:h-[70vh] relative overflow-hidden"
+      <HeroSection
+        imageSrc="https://res.cloudinary.com/baroka/image/upload/v1772294086/ali-ahmadi-pWT8BptTET0-unsplash_plej4w.jpg"
+        imageAlt="Clarity and Focus"
+        heightClass="h-[50vh] md:h-[70vh]"
       >
-        <img
-          src="https://res.cloudinary.com/baroka/image/upload/v1772294086/ali-ahmadi-pWT8BptTET0-unsplash_plej4w.jpg"
-          alt="Clarity and Focus"
-          className="w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[var(--bg-color)]" />
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="space-y-6 max-w-4xl"
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs uppercase tracking-[0.3em] font-medium rounded-full mb-4">
+          <a
+            href="https://fr.wikipedia.org/wiki/Le_Mat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:opacity-80 transition-opacity"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs uppercase tracking-[0.3em] font-medium rounded-full mb-4">
-              <a
-                href="https://fr.wikipedia.org/wiki/Le_Mat"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:opacity-80 transition-opacity"
-              >
-                Le Mat
-              </a>
-            </div>
-            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
-              IROTORI BAROKA
-            </h1>
-            <p className="text-xl md:text-2xl text-white/80 font-light tracking-widest uppercase">
-              Why not ?
-            </p>
-          </motion.div>
+            Le Mat
+          </a>
         </div>
-      </motion.div>
+        <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
+          IROTORI BAROKA
+        </h1>
+        <p className="text-xl md:text-2xl text-white/80 font-light tracking-widest uppercase">
+          Why not ?
+        </p>
+      </HeroSection>
 
       {/* Introduction Section */}
       <section className="max-w-[680px] mx-auto px-4">
