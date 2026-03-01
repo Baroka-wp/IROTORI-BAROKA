@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 
-const prisma = new PrismaClient();
-
-// GET /api/reflexions/[slug] - Get single reflexion
-export async function GET(request: Request, context: any) {
+// GET /api/reflexions/[slug] — Récupérer une réflexion
+export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await context.params;
     const reflexion = await prisma.reflexion.findUnique({
@@ -12,7 +10,7 @@ export async function GET(request: Request, context: any) {
     });
 
     if (!reflexion) {
-      return NextResponse.json({ error: 'Reflexion not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Réflexion non trouvée' }, { status: 404 });
     }
 
     return NextResponse.json(reflexion);

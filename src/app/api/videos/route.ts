@@ -1,37 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { prisma } from '@/lib/db';
+import { authenticate } from '@/lib/auth';
+import { sanitizeHtml } from '@/lib/sanitize';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
-
-async function authenticate(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  if (!token) return false;
-  try {
-    jwt.verify(token, JWT_SECRET);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// GET /api/videos - List videos
+// GET /api/videos — Liste (public)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const playlist = searchParams.get('playlist');
 
-    const where: any = {};
-    if (status) where.status = status;
-    if (playlist) where.playlist = playlist;
+    const allowedStatuses = ['draft', 'published'];
+    const where: { status?: string; playlist?: string } = {};
+    if (status && allowedStatuses.includes(status)) where.status = status;
+    if (playlist) where.playlist = String(playlist);
 
     const videos = await prisma.video.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        thumbnail: true,
+        videoUrl: true,
+        playlist: true,
+        tags: true,
+        resume: true,
+        status: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json({ data: videos });
@@ -40,17 +41,35 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/videos - Create video (auth required)
+// POST /api/videos — Créer (auth requis)
 export async function POST(request: NextRequest) {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
+    const { title, slug, description, thumbnail, videoUrl, playlist, tags, resume, status } = body;
+
+    if (!title || !slug) {
+      return NextResponse.json({ error: 'Titre et slug requis' }, { status: 400 });
+    }
+
+    const allowedStatuses = ['draft', 'published'];
+    const safeStatus = allowedStatuses.includes(status) ? status : 'draft';
+
     const data = {
-      ...body,
-      publishedAt: body.status === 'published' ? new Date() : null,
+      title: String(title),
+      slug: String(slug),
+      description: description ? String(description) : undefined,
+      thumbnail: thumbnail ? String(thumbnail) : undefined,
+      videoUrl: videoUrl ? String(videoUrl) : undefined,
+      playlist: playlist ? String(playlist) : undefined,
+      tags: tags ? String(tags) : undefined,
+      // S4 FIX : sanitisation du champ resume (HTML riche)
+      resume: resume ? sanitizeHtml(String(resume)) : undefined,
+      status: safeStatus,
+      publishedAt: safeStatus === 'published' ? new Date() : null,
     };
 
     const video = await prisma.video.create({ data });
@@ -60,41 +79,52 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/videos - Update video (auth required)
+// PUT /api/videos — Mettre à jour (auth requis)
 export async function PUT(request: NextRequest) {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
-    const { slug, ...data } = body;
+    const { slug, title, description, thumbnail, videoUrl, playlist, tags, resume, status } = body;
 
     if (!slug) {
-      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+      return NextResponse.json({ error: 'Slug requis' }, { status: 400 });
     }
 
+    const allowedStatuses = ['draft', 'published'];
+    const safeStatus = allowedStatuses.includes(status) ? status : 'draft';
+
+    const existing = await prisma.video.findUnique({ where: { slug }, select: { publishedAt: true } });
+    const publishedAt = safeStatus === 'published'
+      ? (existing?.publishedAt ?? new Date())
+      : null;
+
     const updateData = {
-      ...data,
+      ...(title !== undefined && { title: String(title) }),
+      ...(description !== undefined && { description: String(description) }),
+      ...(thumbnail !== undefined && { thumbnail: String(thumbnail) }),
+      ...(videoUrl !== undefined && { videoUrl: String(videoUrl) }),
+      ...(playlist !== undefined && { playlist: String(playlist) }),
+      ...(tags !== undefined && { tags: String(tags) }),
+      ...(resume !== undefined && { resume: sanitizeHtml(String(resume)) }),
+      status: safeStatus,
+      publishedAt,
       updatedAt: new Date(),
-      publishedAt: data.status === 'published' ? new Date() : undefined,
     };
 
-    const video = await prisma.video.update({
-      where: { slug },
-      data: updateData,
-    });
-
+    const video = await prisma.video.update({ where: { slug }, data: updateData });
     return NextResponse.json(video);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 }
 
-// DELETE /api/videos - Delete video (auth required)
+// DELETE /api/videos — Supprimer (auth requis)
 export async function DELETE(request: NextRequest) {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
@@ -102,7 +132,7 @@ export async function DELETE(request: NextRequest) {
     const { slug } = body;
 
     if (!slug) {
-      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+      return NextResponse.json({ error: 'Slug requis' }, { status: 400 });
     }
 
     await prisma.video.delete({ where: { slug } });

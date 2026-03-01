@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
+import { getJwtSecret } from '@/lib/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
-
-// GET /api/auth - Check current user
+// GET /api/auth - Vérifier l'utilisateur courant
 export async function GET() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
@@ -14,9 +14,9 @@ export async function GET() {
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     return NextResponse.json({ user: decoded });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ user: null });
   }
 }
@@ -26,25 +26,40 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const { email, password } = body;
 
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'password123';
+  if (!email || !password) {
+    return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
+  }
 
-  if (email === adminEmail && password === adminPassword) {
-    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '24h' });
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPasswordHash = process.env.ADMIN_PASSWORD;
+
+  // Fail hard si les variables ne sont pas configurées — évite tout login silencieux par défaut
+  if (!adminEmail || !adminPasswordHash) {
+    console.error('ADMIN_EMAIL ou ADMIN_PASSWORD non défini dans les variables d\'environnement');
+    return NextResponse.json({ error: 'Erreur de configuration serveur' }, { status: 500 });
+  }
+
+  const emailMatch = email === adminEmail;
+  // S2 FIX : comparaison bcrypt — ADMIN_PASSWORD doit être un hash bcrypt dans le .env
+  // Pour générer le hash : node -e "require('bcryptjs').hash('votre_mdp', 12).then(console.log)"
+  const passwordMatch = await bcrypt.compare(password, adminPasswordHash);
+
+  if (emailMatch && passwordMatch) {
+    const token = jwt.sign({ email }, getJwtSecret(), { expiresIn: '24h' });
 
     const response = NextResponse.json({ success: true });
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: 60 * 60 * 24, // 24 heures
       path: '/',
     });
 
     return response;
   }
 
-  return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+  return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
 }
 
 // DELETE /api/auth - Logout

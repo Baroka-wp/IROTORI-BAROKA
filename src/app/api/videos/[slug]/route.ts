@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 
-const prisma = new PrismaClient();
-
-// GET /api/videos/[slug] - Get single video
-export async function GET(request: Request, context: any) {
+// GET /api/videos/[slug] — Récupérer une vidéo
+export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await context.params;
     const video = await prisma.video.findUnique({
@@ -12,7 +10,7 @@ export async function GET(request: Request, context: any) {
     });
 
     if (!video) {
-      return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Vidéo non trouvée' }, { status: 404 });
     }
 
     return NextResponse.json(video);
