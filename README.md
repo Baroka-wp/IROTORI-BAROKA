@@ -93,47 +93,10 @@ npx prisma db execute --file prisma/migrations/001_refactor_content.sql
 npm run dev
 ```
 
-Le serveur tourne sur `http://localhost:3000`
-
-## 📡 API Endpoints
-
-### Reflexions
-- `GET /api/reflexions` - Liste (filtres: status, tags, page, limit)
-- `GET /api/reflexions/[slug]` - Détail
-- `POST /api/reflexions` - Créer (auth)
-- `PUT /api/reflexions/[slug]` - Mettre à jour (auth)
-- `DELETE /api/reflexions/[slug]` - Supprimer (auth)
-
-### Videos
-- `GET /api/videos` - Liste (filtres: status, playlist, page, limit)
-- `GET /api/videos/[slug]` - Détail
-- `POST /api/videos` - Créer (auth)
-- `PUT /api/videos/[slug]` - Mettre à jour (auth)
-- `DELETE /api/videos/[slug]` - Supprimer (auth)
-
-### Ebooks
-- `GET /api/ebooks` - Liste
-- `GET /api/ebooks/[slug]` - Détail
-- `POST /api/ebooks` - Créer (auth)
-- `PUT /api/ebooks/[slug]` - Mettre à jour (auth)
-- `DELETE /api/ebooks/[slug]` - Supprimer (auth)
-
-### Notes
-- `GET /api/notes` - Liste
-- `GET /api/notes/[slug]` - Détail
-- `POST /api/notes` - Créer (auth)
-- `PUT /api/notes/[slug]` - Mettre à jour (auth)
-- `DELETE /api/notes/[slug]` - Supprimer (auth)
 
 ## 🚀 Déploiement sur Vercel
 
 ### 1. Préparer la base de données
-
-Créer une base Neon PostgreSQL :
-1. Aller sur https://neon.tech
-2. Créer un nouveau projet
-3. Copier l'URL de connexion
-4. Ajouter à `DATABASE_URL` dans Vercel
 
 ### 2. Déployer
 
