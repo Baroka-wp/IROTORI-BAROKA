@@ -69,7 +69,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
   // Library Page (Ebooks)
   if (type === 'library') {
     const ebookItems = items as Ebook[];
-    console.log('Library ebooks:', ebookItems);
+    
     return (
       <div className="space-y-32 pb-32">
         {/* Hero Section */}
@@ -93,7 +93,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
               transition={{ delay: 0.5, duration: 0.8 }}
               className="space-y-6 max-w-4xl"
             >
-              <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white whitespace-nowrap">
+              <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
                 {displayTitle}
               </h1>
               <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
@@ -109,8 +109,11 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
               ebookItems.map((ebook) => (
                 <article
                   key={ebook.id}
-                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors"
+                  role="link"
+                  tabIndex={0}
+                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2"
                   onClick={() => onNavigate(`post/${ebook.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${ebook.slug}`); } }}
                 >
                   {ebook.coverImage ? (
                     <img src={ebook.coverImage} alt={ebook.title} className="w-full h-80 object-cover" />
@@ -152,7 +155,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                 </article>
               ))
             ) : (
-              <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-20">Nothing here yet.</p>
+              <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-20">Aucun livre disponible pour le moment.</p>
             )}
           </div>
         </div>
@@ -186,7 +189,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                 transition={{ delay: 0.5, duration: 0.8 }}
                 className="space-y-6 max-w-4xl"
               >
-                <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white whitespace-nowrap">
+                <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
                   {displayTitle}
                 </h1>
                 <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
@@ -259,7 +262,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                 <ArrowLeft size={20} />
                 Choisir une autre catégorie
               </button>
-              <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white whitespace-nowrap">
+              <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
                 {videoPlaylist}
               </h1>
             </motion.div>
@@ -278,8 +281,11 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
               {videoItems.map((video) => (
                 <article
                   key={video.id}
-                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col"
+                  role="link"
+                  tabIndex={0}
+                  className="group cursor-pointer bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg overflow-hidden hover:border-[#6B1A2A] transition-colors flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2"
                   onClick={() => onNavigate(`post/${video.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${video.slug}`); } }}
                 >
                   {video.thumbnail ? (
                     <div className="relative w-full">
@@ -338,7 +344,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
             transition={{ delay: 0.5, duration: 0.8 }}
             className="space-y-6 max-w-4xl"
           >
-            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white whitespace-nowrap">
+            <h1 className="text-5xl md:text-7xl font-light tracking-tight leading-tight text-white">
               {displayTitle}
             </h1>
             <p className="text-xl md:text-2xl text-white/90 font-light max-w-[600px] mx-auto">
@@ -368,7 +374,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
         <div className="space-y-16">
           {postsBySubcategory.length > 0 ? (
             postsBySubcategory.map((reflexion) => (
-              <article key={reflexion.id} className="group cursor-pointer" onClick={() => onNavigate(`post/${reflexion.slug}`)}>
+              <article key={reflexion.id} role="link" tabIndex={0} className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm" onClick={() => onNavigate(`post/${reflexion.slug}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate(`post/${reflexion.slug}`); } }}>
                 <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(reflexion.createdAt)}</p>
                 <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
                   {reflexion.title}

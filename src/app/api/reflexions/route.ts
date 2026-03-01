@@ -1,37 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { prisma } from '@/lib/db';
+import { authenticate } from '@/lib/auth';
+import { sanitizeHtml } from '@/lib/sanitize';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
-
-async function authenticate(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  if (!token) return false;
-  try {
-    jwt.verify(token, JWT_SECRET);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// GET /api/reflexions - List reflexions
+// GET /api/reflexions — Liste (public)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const tags = searchParams.get('tags');
 
-    const where: any = {};
-    if (status) where.status = status;
+    // Validation stricte du filtre status — refuse toute valeur arbitraire
+    const allowedStatuses = ['draft', 'published'];
+    const where: { status?: string; tags?: { contains: string; mode: 'insensitive' } } = {};
+    if (status && allowedStatuses.includes(status)) where.status = status;
     if (tags) where.tags = { contains: tags, mode: 'insensitive' };
 
     const reflexions = await prisma.reflexion.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      // S6 FIX : sélection explicite — pas de fuite de champs internes
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        content: true,
+        tags: true,
+        status: true,
+        publishedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return NextResponse.json({ data: reflexions });
@@ -40,17 +39,32 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/reflexions - Create reflexion (auth required)
+// POST /api/reflexions — Créer (auth requis)
 export async function POST(request: NextRequest) {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
+
+    // S6 FIX : whitelist explicite des champs — refuse id, createdAt, updatedAt injectés
+    const { title, slug, content, tags, status } = body;
+    if (!title || !slug) {
+      return NextResponse.json({ error: 'Titre et slug requis' }, { status: 400 });
+    }
+
+    const allowedStatuses = ['draft', 'published'];
+    const safeStatus = allowedStatuses.includes(status) ? status : 'draft';
+
     const data = {
-      ...body,
-      publishedAt: body.status === 'published' ? new Date() : null,
+      title: String(title),
+      slug: String(slug),
+      // S4 FIX : sanitisation du HTML riche avant stockage
+      content: sanitizeHtml(String(content ?? '')),
+      tags: tags ? String(tags) : undefined,
+      status: safeStatus,
+      publishedAt: safeStatus === 'published' ? new Date() : null,
     };
 
     const reflexion = await prisma.reflexion.create({ data });
@@ -60,24 +74,37 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT /api/reflexions - Update reflexion (auth required)
+// PUT /api/reflexions — Mettre à jour (auth requis)
 export async function PUT(request: NextRequest) {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
-    const { slug, ...data } = body;
+    const { slug, title, content, tags, status } = body;
 
     if (!slug) {
-      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+      return NextResponse.json({ error: 'Slug requis' }, { status: 400 });
     }
 
+    const allowedStatuses = ['draft', 'published'];
+    const safeStatus = allowedStatuses.includes(status) ? status : 'draft';
+
+    // S6 FIX : whitelist — seuls les champs légitimes sont mis à jour
+    // C7 FIX : publishedAt n'est défini qu'à la première publication (on récupère la valeur existante)
+    const existing = await prisma.reflexion.findUnique({ where: { slug }, select: { publishedAt: true } });
+    const publishedAt = safeStatus === 'published'
+      ? (existing?.publishedAt ?? new Date())
+      : null;
+
     const updateData = {
-      ...data,
+      ...(title !== undefined && { title: String(title) }),
+      ...(content !== undefined && { content: sanitizeHtml(String(content)) }),
+      ...(tags !== undefined && { tags: String(tags) }),
+      status: safeStatus,
+      publishedAt,
       updatedAt: new Date(),
-      publishedAt: data.status === 'published' ? new Date() : undefined,
     };
 
     const reflexion = await prisma.reflexion.update({
@@ -91,10 +118,10 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/reflexions - Delete reflexion (auth required)
+// DELETE /api/reflexions — Supprimer (auth requis)
 export async function DELETE(request: NextRequest) {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
@@ -102,7 +129,7 @@ export async function DELETE(request: NextRequest) {
     const { slug } = body;
 
     if (!slug) {
-      return NextResponse.json({ error: 'Slug required' }, { status: 400 });
+      return NextResponse.json({ error: 'Slug requis' }, { status: 400 });
     }
 
     await prisma.reflexion.delete({ where: { slug } });

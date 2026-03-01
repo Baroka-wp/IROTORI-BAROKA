@@ -1,20 +1,15 @@
 import type { NextConfig } from 'next';
 
+// SÉCURITÉ : Ne jamais exposer les secrets dans le bloc `env` de Next.js.
+// Le bloc `env` injecte les valeurs dans le bundle JavaScript client (accessible publiquement).
+// Les variables serveur (JWT_SECRET, ADMIN_PASSWORD, DATABASE_URL, clés API)
+// restent dans process.env et ne sont accessibles que dans les API routes / Server Components.
+// Seules les variables NEXT_PUBLIC_* (déclarées avec ce préfixe) sont destinées au client.
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
     },
-  },
-  env: {
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-    JWT_SECRET: process.env.JWT_SECRET,
-    ADMIN_EMAIL: process.env.ADMIN_EMAIL,
-    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
-    DATABASE_URL: process.env.DATABASE_URL,
-    BREVO_API_KEY: process.env.BREVO_API_KEY,
-    BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL,
-    APP_URL: process.env.APP_URL,
   },
 };
 

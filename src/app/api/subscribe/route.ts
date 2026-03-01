@@ -1,27 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { prisma } from '@/lib/db';
+import { authenticate } from '@/lib/auth';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
-
-async function authenticate(): Promise<boolean> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
-  if (!token) return false;
-  try {
-    jwt.verify(token, JWT_SECRET);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// GET /api/subscribers - List subscribers (auth required)
+// GET /api/subscribe — Liste des abonnés (auth requis)
 export async function GET() {
   if (!(await authenticate())) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   }
 
   try {
@@ -34,21 +18,27 @@ export async function GET() {
   }
 }
 
-// POST /api/subscribe - Subscribe to newsletter
+// POST /api/subscribe — S'abonner à la newsletter (public)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email } = body;
 
-    if (!email) {
-      return NextResponse.json({ error: 'Email required' }, { status: 400 });
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json({ error: 'Email requis' }, { status: 400 });
     }
 
-    await prisma.subscriber.create({ data: { email } });
+    // Validation format email basique
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return NextResponse.json({ error: 'Format email invalide' }, { status: 400 });
+    }
+
+    await prisma.subscriber.create({ data: { email: email.trim().toLowerCase() } });
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (error.code === 'P2002') {
-      return NextResponse.json({ success: true, message: 'Already subscribed' });
+      return NextResponse.json({ success: true, message: 'Déjà abonné' });
     }
     return NextResponse.json({ error: error.message }, { status: 400 });
   }

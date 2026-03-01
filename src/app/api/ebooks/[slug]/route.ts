@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
 
-const prisma = new PrismaClient();
-
-// GET /api/ebooks/[slug] - Get single ebook
-export async function GET(request: Request, context: any) {
+// GET /api/ebooks/[slug] — Récupérer un e-book
+export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await context.params;
     const ebook = await prisma.ebook.findUnique({
@@ -12,7 +10,7 @@ export async function GET(request: Request, context: any) {
     });
 
     if (!ebook) {
-      return NextResponse.json({ error: 'Ebook not found' }, { status: 404 });
+      return NextResponse.json({ error: 'E-book non trouvé' }, { status: 404 });
     }
 
     return NextResponse.json(ebook);
