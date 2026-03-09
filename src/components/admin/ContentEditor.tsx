@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '../../components/Editor';
+import ZenEditor from '../../components/ZenEditor';
 import { X } from 'lucide-react';
 
 interface ContentEditorProps {
@@ -551,9 +552,10 @@ export const ContentEditor: React.FC<ContentEditorProps> = ({
                   <label className="block text-sm font-medium text-[var(--text-color)]/60 mb-2">
                     Contenu
                   </label>
-                  <Editor
+                  <ZenEditor
                     content={formData.content}
                     onChange={(content) => updateField('content', content)}
+                    placeholder="Commencez par un titre…"
                   />
                 </div>
               )}

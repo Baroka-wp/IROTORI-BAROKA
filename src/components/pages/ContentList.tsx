@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, Book, FileText, PlayCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Book, Clock, FileText, PlayCircle } from 'lucide-react';
 import { formatDate, Reflexion, Video, Ebook } from '../../lib/utils';
 import { HeroSection } from '../ui/HeroSection';
 
@@ -269,7 +269,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
 
   // Reflexion Page with subcategories
   return (
-    <div className="space-y-32 pb-32">
+    <div className="space-y-24 pb-32">
       <HeroSection
         imageSrc="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1920&h=1080"
         imageAlt="Réflexions"
@@ -284,14 +284,14 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
 
       <div className="max-w-[680px] mx-auto px-4 pb-32">
         {/* Subcategory filters */}
-        <div className="flex flex-wrap gap-2 mb-12">
+        <div className="flex flex-wrap gap-2 mb-14">
           {reflexionSubcategories.map((sub) => (
             <button
               key={sub.id}
               onClick={() => setSelectedSubcategory(sub.id)}
-              className={`px-6 py-3 text-sm rounded-full transition-colors ${selectedSubcategory === sub.id
+              className={`px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 ${selectedSubcategory === sub.id
                 ? 'bg-[#6B1A2A] text-white'
-                : 'bg-[var(--card-bg)] text-[var(--text-color)]/60 hover:text-[#6B1A2A] border border-[var(--border-color)]'
+                : 'bg-[var(--card-bg)] text-[var(--text-color)]/50 hover:text-[#6B1A2A] border border-[var(--border-color)]'
                 }`}
             >
               {sub.name}
@@ -299,18 +299,84 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
           ))}
         </div>
 
-        <div className="space-y-16">
+        {/* Count */}
+        {postsBySubcategory.length > 0 && (
+          <p className="text-xs uppercase tracking-widest text-[var(--text-color)]/30 mb-10">
+            {postsBySubcategory.length} réflexion{postsBySubcategory.length > 1 ? 's' : ''}
+          </p>
+        )}
+
+        <div className="divide-y divide-[var(--border-color)]">
           {postsBySubcategory.length > 0 ? (
-            postsBySubcategory.map((reflexion) => (
-              <article key={reflexion.id} role="link" tabIndex={0} className="group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm" onClick={() => router.push(`/post/${reflexion.slug}`)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${reflexion.slug}`); } }}>
-                <p className="text-sm text-[var(--text-color)]/40 font-light mb-2">{formatDate(reflexion.createdAt)}</p>
-                <h3 className="text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors leading-snug">
-                  {reflexion.title}
-                </h3>
-              </article>
-            ))
+            postsBySubcategory.map((item, index) => {
+              const reflexion = item as Reflexion;
+              // Excerpt: strip HTML, take first 120 chars
+              const rawText = reflexion.content
+                ?.replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim() ?? '';
+              const excerpt = rawText.length > 120 ? rawText.slice(0, 120).trimEnd() + '…' : rawText;
+              // Reading time
+              const words = rawText.split(' ').filter(Boolean).length;
+              const minutes = Math.max(1, Math.ceil(words / 200));
+
+              return (
+                <motion.article
+                  key={reflexion.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.06, ease: 'easeOut' }}
+                  role="link"
+                  tabIndex={0}
+                  className="group cursor-pointer py-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1A2A] focus-visible:ring-offset-2 rounded-sm"
+                  onClick={() => router.push(`/post/${reflexion.slug}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/post/${reflexion.slug}`); } }}
+                >
+                  {/* Top meta */}
+                  <div className="flex items-center gap-4 mb-4 flex-wrap">
+                    <span className="text-xs text-[var(--text-color)]/35 font-light uppercase tracking-wider">
+                      {formatDate(reflexion.createdAt)}
+                    </span>
+                    <span className="text-[var(--text-color)]/20 text-xs">·</span>
+                    <span className="flex items-center gap-1 text-xs text-[var(--text-color)]/35">
+                      <Clock size={11} />
+                      {minutes} min
+                    </span>
+                    {reflexion.tags && (
+                      <>
+                        <span className="text-[var(--text-color)]/20 text-xs">·</span>
+                        <div className="flex gap-1.5 flex-wrap">
+                          {reflexion.tags.split(',').slice(0, 2).map(tag => (
+                            <span key={tag} className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[var(--card-bg)] text-[var(--text-color)]/40 rounded-sm border border-[var(--border-color)]">
+                              {tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-2xl md:text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors duration-200 leading-snug mb-3">
+                    {reflexion.title}
+                  </h3>
+
+                  {/* Excerpt */}
+                  {excerpt && (
+                    <p className="text-base text-[var(--text-color)]/50 font-light leading-relaxed mb-4 max-w-[560px]">
+                      {excerpt}
+                    </p>
+                  )}
+
+                  {/* Read more */}
+                  <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-[#6B1A2A]/0 group-hover:text-[#6B1A2A]/70 transition-all duration-200">
+                    Lire <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </motion.article>
+              );
+            })
           ) : (
-            <p className="text-[var(--text-color)]/40 font-light italic">Aucune réflexion dans cette catégorie.</p>
+            <p className="text-[var(--text-color)]/40 font-light italic py-12">Aucune réflexion dans cette catégorie.</p>
           )}
         </div>
       </div>
