@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+.github
+
+# Claude
+.claude
+
+# Next.js build output
+.next
+
+# Node modules (réinstallés dans le build)
+node_modules
+
+# Fichiers sensibles
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker
+Dockerfile*
+docker-compose*
+
+# Docs
+*.md
+LICENSE
+
+# OS
+.DS_Store
+Thumbs.db

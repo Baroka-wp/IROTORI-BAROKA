@@ -22,12 +22,80 @@
     --card-bg: rgba(255, 255, 255, 0.05);
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply antialiased transition-colors duration-300;
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-size: 18px; /* Increased base font size */
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Réduction du mouvement pour l'accessibilité */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ─── ZenEditor ─────────────────────────────────────────────────────────── */
+.zen-editor-body { min-height: 420px; }
+
+.zen-prose {
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--text-color);
+}
+.zen-prose p { margin-bottom: 1.25em; color: var(--text-color); opacity: 0.88; }
+.zen-prose h1 {
+  font-size: 1.9em; font-weight: 300; color: #6B1A2A;
+  margin-top: 0; margin-bottom: 0.6em; line-height: 1.2;
+  border-bottom: 1px solid var(--border-color); padding-bottom: 0.4em;
+}
+.zen-prose h2 { font-size: 1.4em; font-weight: 400; color: #6B1A2A; margin-top: 1.6em; margin-bottom: 0.5em; }
+.zen-prose h3 { font-size: 1.15em; font-weight: 500; color: var(--text-color); margin-top: 1.4em; margin-bottom: 0.4em; }
+.zen-prose blockquote {
+  border-left: 3px solid #6B1A2A; margin: 1.5em 0; padding: 0.6em 1.2em;
+  background-color: var(--card-bg); color: var(--text-muted); font-style: italic;
+  border-radius: 0 6px 6px 0;
+}
+.zen-prose ul, .zen-prose ol { padding-left: 1.5em; margin-bottom: 1.2em; color: var(--text-color); opacity: 0.88; }
+.zen-prose li { margin-bottom: 0.3em; }
+.zen-prose hr { border: none; border-top: 1px solid var(--border-color); margin: 2em 0; }
+.zen-link { color: #6B1A2A; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* Placeholder */
+.zen-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--text-color); opacity: 0.25; float: left;
+  height: 0; pointer-events: none; font-style: italic;
+}
+.zen-bubble { z-index: 100; }
+
+/* ─── Hero skeleton shimmer ─────────────────────────────────────────────── */
+.hero-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--card-bg) 0%,
+    rgba(107, 26, 42, 0.08) 50%,
+    var(--card-bg) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-skeleton { animation: none; }
 }
 
 .prose h1, .prose h2, .prose h3 {

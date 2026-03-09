@@ -1,0 +1,21 @@
+services:
+  app:
+    image: ${IMAGE:-irotori-baroka:latest}
+    container_name: irotori-baroka
+    restart: unless-stopped
+    ports:
+      # PORT est défini dans le .env du VPS.
+      # Mettre PORT=0 pour que Docker choisisse automatiquement un port libre.
+      # Exemple : PORT=3001 → le conteneur sera accessible sur :3001
+      - "${PORT:-3000}:3000"
+    environment:
+      DATABASE_URL:      ${DATABASE_URL}
+      JWT_SECRET:        ${JWT_SECRET}
+      ADMIN_EMAIL:       ${ADMIN_EMAIL}
+      ADMIN_PASSWORD:    ${ADMIN_PASSWORD}
+      GEMINI_API_KEY:    ${GEMINI_API_KEY}
+      BREVO_API_KEY:     ${BREVO_API_KEY}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL}
+      APP_URL:           ${APP_URL}
+      SITE_URL:          ${SITE_URL}
+      NODE_ENV:          production

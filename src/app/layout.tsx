@@ -1,30 +1,73 @@
 import type { Metadata } from 'next';
 import '../index.css';
 
-// D5 FIX: métadonnées SEO complètes avec template de titre par page
+const siteUrl = 'https://irotoribaroka.com';
+const siteName = 'IROTORI BAROKA';
+const defaultTitle = 'IROTORI BAROKA — Plateforme de Clarté Mentale';
+const defaultDescription =
+  'Réflexions, vidéos, e-books et projets sur le développement personnel, la philosophie et la spiritualité. Par IROTORI BAROKA Emmanuel.';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://irotoribaroka.com'),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: 'IROTORI BAROKA — Plateforme de Clarté Mentale',
-    template: '%s — IROTORI BAROKA',
+    default: defaultTitle,
+    template: `%s — ${siteName}`,
   },
-  description: 'Réflexions, vidéos, e-books et projets sur le développement personnel, la philosophie et la spiritualité.',
+  description: defaultDescription,
+  keywords: [
+    'IROTORI BAROKA',
+    'IROTORI BAROKA Emmanuel',
+    'Baroka Emmanuel',
+    'développement personnel',
+    'clarté mentale',
+    'spiritualité',
+    'entrepreneuriat',
+    'management',
+    'e-book',
+    'webinaire',
+    'réflexions',
+  ],
+  authors: [{ name: 'IROTORI BAROKA Emmanuel', url: siteUrl }],
+  creator: 'IROTORI BAROKA Emmanuel',
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
-    siteName: 'IROTORI BAROKA',
-    title: 'IROTORI BAROKA — Plateforme de Clarté Mentale',
-    description: 'Réflexions, vidéos, e-books et projets sur le développement personnel, la philosophie et la spiritualité.',
+    siteName,
+    title: defaultTitle,
+    description: defaultDescription,
+    url: siteUrl,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'IROTORI BAROKA — Plateforme de Clarté Mentale',
-    description: 'Réflexions, vidéos, e-books et projets sur le développement personnel, la philosophie et la spiritualité.',
+    title: defaultTitle,
+    description: defaultDescription,
+    creator: '@irotoribaroka',
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: { index: true, follow: true },
   },
+  alternates: {
+    canonical: siteUrl,
+  },
+};
+
+// JSON-LD Person schema for name-based Google search
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'IROTORI BAROKA Emmanuel',
+  alternateName: ['IROTORI BAROKA', 'Baroka Emmanuel'],
+  url: siteUrl,
+  description: defaultDescription,
+  knowsAbout: [
+    'Développement personnel',
+    'Spiritualité',
+    'Entrepreneuriat',
+    'Management',
+    'Philosophie',
+  ],
 };
 
 export default function RootLayout({
@@ -34,15 +77,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className="dark" suppressHydrationWarning>
-      {/* P7 FIX: <link> dans <head> plutôt que @import CSS.
-          preconnect élimine le DNS/TLS handshake des requêtes font,
-          le stylesheet <link> se charge en parallèle sans bloquer le render. */}
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
           rel="stylesheet"
+        />
+        {/* JSON-LD structured data — améliore le référencement par nom */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
       </head>
       <body className="font-sans selection:bg-[#6B1A2A]/20 selection:text-[#6B1A2A] transition-colors duration-300 bg-[var(--bg-color)] text-[var(--text-color)]">

@@ -1,46 +1,149 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
+import { ArrowRight, ArrowLeft, Clock, Share2, Check } from 'lucide-react';
 import { formatDate, Reflexion, Video, Ebook } from '../../lib/utils';
-import { ArrowRight } from 'lucide-react';
+import { PrivateGroupCTA } from '../ui/PrivateGroupCTA';
 
 interface PostDisplayProps {
   content: Reflexion | Video | Ebook;
 }
 
+// Calcule le temps de lecture estimé depuis du HTML
+function readingTime(html: string): number {
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  const words = text.split(' ').filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
+// Bouton de partage (Web Share API + fallback copie)
+function ShareButton({ title }: { title: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch {
+        return;
+      }
+    }
+    // Fallback clipboard — fonctionne sans permission "clipboard-write"
+    let success = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      success = true;
+    } catch {
+      // execCommand fallback (browsers sans permission Clipboard API)
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      success = document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleShare}
+      aria-label="Partager cet article"
+      className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors"
+    >
+      {copied ? <Check size={15} /> : <Share2 size={15} />}
+      {copied ? 'Lien copié !' : 'Partager'}
+    </button>
+  );
+}
+
+// Bouton retour vers la liste
+function BackButton({ href, label }: { href: string; label: string }) {
+  const router = useRouter();
+  return (
+    <button
+      onClick={() => router.push(href)}
+      className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors mb-12 group"
+    >
+      <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
+      {label}
+    </button>
+  );
+}
+
 export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
-  // Détermine le type de contenu par duck-typing sur les champs
   const isReflexion = 'content' in content && !('videoUrl' in content) && !('downloadUrl' in content);
   const isVideo = 'videoUrl' in content;
   const isEbook = 'downloadUrl' in content && 'price' in content;
 
+  const fadeUp = {
+    initial: { opacity: 0, y: 16 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6, ease: 'easeOut' as const },
+  };
+
   // ─── Réflexion ──────────────────────────────────────────────────────────────
   if (isReflexion) {
     const reflexion = content as Reflexion;
+    const minutes = readingTime(reflexion.content);
+
     return (
-      <article className="max-w-[680px] mx-auto px-4 py-20">
+      <motion.article {...fadeUp} className="max-w-[680px] mx-auto px-4 py-16">
+        <BackButton href="/reflexion" label="Toutes les réflexions" />
+
         <header className="mb-16">
-          <p className="text-sm text-[var(--text-color)]/40 font-light mb-4 uppercase tracking-widest">
-            {formatDate(reflexion.createdAt)} • Réflexion
-          </p>
+          {/* Meta row: date · reading time · share */}
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <p className="text-sm text-[var(--text-color)]/40 font-light uppercase tracking-widest">
+              {formatDate(reflexion.createdAt)} · Réflexion
+            </p>
+            <div className="flex items-center gap-4">
+              <span className="inline-flex items-center gap-1.5 text-sm text-[var(--text-color)]/40">
+                <Clock size={14} />
+                {minutes} min de lecture
+              </span>
+              <ShareButton title={reflexion.title} />
+            </div>
+          </div>
+
           <h1 className="text-5xl md:text-6xl font-light leading-tight mb-8 text-[#6B1A2A]">
             {reflexion.title}
           </h1>
+
           {reflexion.tags && (
             <div className="flex gap-2 flex-wrap">
               {reflexion.tags.split(',').map(tag => (
-                <span key={tag} className="text-xs uppercase tracking-wider px-2 py-1 bg-[var(--card-bg)] text-[var(--text-color)]/60 rounded-sm">
+                <span key={tag} className="text-xs uppercase tracking-wider px-2.5 py-1 bg-[var(--card-bg)] text-[var(--text-color)]/50 rounded-sm border border-[var(--border-color)]">
                   {tag.trim()}
                 </span>
               ))}
             </div>
           )}
         </header>
+
         <div className="prose max-w-none font-light leading-relaxed text-xl">
-          {/* Le contenu HTML est sanitisé à l'écriture dans les API routes (lib/sanitize.ts) */}
           <div dangerouslySetInnerHTML={{ __html: reflexion.content }} />
         </div>
-      </article>
+
+        {/* Separator */}
+        <div className="mt-20 mb-2 flex items-center gap-4">
+          <div className="flex-1 h-px bg-[var(--border-color)]" />
+          <span className="text-xs uppercase tracking-widest text-[var(--text-color)]/20">fin</span>
+          <div className="flex-1 h-px bg-[var(--border-color)]" />
+        </div>
+
+        {/* CTA groupe privé */}
+        <PrivateGroupCTA contentType="reflexion" />
+      </motion.article>
     );
   }
 
@@ -69,11 +172,16 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
     const embedUrl = getVideoEmbed(video.videoUrl);
 
     return (
-      <article className="max-w-[680px] mx-auto px-4 py-20">
+      <motion.article {...fadeUp} className="max-w-[680px] mx-auto px-4 py-16">
+        <BackButton href="/video" label="Tous les webinaires" />
+
         <header className="mb-12">
-          <p className="text-sm text-[var(--text-color)]/40 font-light mb-4 uppercase tracking-widest">
-            {formatDate(video.createdAt)} • Vidéo
-          </p>
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <p className="text-sm text-[var(--text-color)]/40 font-light uppercase tracking-widest">
+              {formatDate(video.createdAt)} · Vidéo
+            </p>
+            <ShareButton title={video.title} />
+          </div>
           <h1 className="text-5xl md:text-6xl font-light leading-tight mb-6 text-[#6B1A2A]">
             {video.title}
           </h1>
@@ -116,7 +224,9 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
             />
           </div>
         )}
-      </article>
+
+        <PrivateGroupCTA contentType="video" />
+      </motion.article>
     );
   }
 
@@ -124,11 +234,16 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
   if (isEbook) {
     const ebook = content as Ebook;
     return (
-      <article className="max-w-[680px] mx-auto px-4 py-20">
+      <motion.article {...fadeUp} className="max-w-[680px] mx-auto px-4 py-16">
+        <BackButton href="/library" label="Tous les livres" />
+
         <header className="mb-12">
-          <p className="text-sm text-[var(--text-color)]/40 font-light mb-4 uppercase tracking-widest">
-            {formatDate(ebook.createdAt)} • E-book
-          </p>
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <p className="text-sm text-[var(--text-color)]/40 font-light uppercase tracking-widest">
+              {formatDate(ebook.createdAt)} · E-book
+            </p>
+            <ShareButton title={ebook.title} />
+          </div>
           <h1 className="text-5xl md:text-6xl font-light leading-tight mb-4 text-[#6B1A2A]">
             {ebook.title}
           </h1>
@@ -166,7 +281,9 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
             <div dangerouslySetInnerHTML={{ __html: ebook.description }} />
           </div>
         )}
-      </article>
+
+        <PrivateGroupCTA contentType="ebook" />
+      </motion.article>
     );
   }
 
