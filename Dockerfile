@@ -24,6 +24,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 
 RUN npm run build
+# S'assurer que public/ existe même s'il est vide
+RUN mkdir -p /app/public
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 3 — Runner (image finale, minimale)
