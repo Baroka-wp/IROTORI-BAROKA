@@ -24,6 +24,10 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
+      # Docker exige un nom d'image tout en minuscules
+      - name: Mettre IMAGE_NAME en minuscules
+        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Configurer Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -65,6 +69,10 @@ jobs:
       - name: Checkout (pour récupérer docker-compose.yml)
         uses: actions/checkout@v4
 
+      # Docker exige un nom d'image tout en minuscules
+      - name: Mettre IMAGE_NAME en minuscules
+        run: echo "IMAGE_NAME=$(echo '${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Copier docker-compose.yml sur le VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -77,22 +85,19 @@ jobs:
       - name: Déployer (pull + restart)
         uses: appleboy/ssh-action@v1.0.3
         env:
-          # Image à déployer
-          IMAGE:             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          GH_TOKEN:          ${{ secrets.GITHUB_TOKEN }}
-          GH_ACTOR:          ${{ github.actor }}
-          # Port exposé sur le VPS (changer dans les secrets GitHub si besoin)
-          APP_PORT:          ${{ secrets.APP_PORT }}
-          # Variables d'application
-          DATABASE_URL:      ${{ secrets.DATABASE_URL }}
-          JWT_SECRET:        ${{ secrets.JWT_SECRET }}
-          ADMIN_EMAIL:       ${{ secrets.ADMIN_EMAIL }}
-          ADMIN_PASSWORD:    ${{ secrets.ADMIN_PASSWORD }}
-          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
-          BREVO_API_KEY:     ${{ secrets.BREVO_API_KEY }}
+          IMAGE:              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          GH_TOKEN:           ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR:           ${{ github.actor }}
+          APP_PORT:           ${{ secrets.APP_PORT }}
+          DATABASE_URL:       ${{ secrets.DATABASE_URL }}
+          JWT_SECRET:         ${{ secrets.JWT_SECRET }}
+          ADMIN_EMAIL:        ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD:     ${{ secrets.ADMIN_PASSWORD }}
+          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          BREVO_API_KEY:      ${{ secrets.BREVO_API_KEY }}
           BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
-          APP_URL:           ${{ secrets.APP_URL }}
-          SITE_URL:          ${{ secrets.SITE_URL }}
+          APP_URL:            ${{ secrets.APP_URL }}
+          SITE_URL:           ${{ secrets.SITE_URL }}
         with:
           host:     ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -103,7 +108,7 @@ jobs:
             mkdir -p /opt/irotori-baroka
             cd /opt/irotori-baroka
 
-            # ── Écrire le .env (printf gère les caractères spéciaux) ─────────
+            # ── Écrire le .env ────────────────────────────────────────────────
             printf "IMAGE=%s\n"               "$IMAGE"               > .env
             printf "PORT=%s\n"               "${APP_PORT:-3000}"    >> .env
             printf "DATABASE_URL=%s\n"        "$DATABASE_URL"        >> .env
