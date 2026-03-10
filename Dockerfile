@@ -1,5 +1,16 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 1 — Build Next.js
+# Stage 1 — Dépendances de production (prisma + toutes ses deps transitives)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat openssl
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+RUN npm ci --omit=dev
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2 — Build Next.js
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl
@@ -20,7 +31,7 @@ RUN npm run build
 RUN mkdir -p /app/public
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 2 — Runner (image finale)
+# Stage 3 — Runner (image finale)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 RUN apk add --no-cache openssl
@@ -33,16 +44,17 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs \
  && adduser  --system --uid 1001 nextjs
 
-# Installer les dépendances de production
-# (inclut prisma + toutes ses dépendances transitives : effect, fast-check, etc.)
-COPY package.json package-lock.json ./
-COPY prisma ./prisma/
-RUN npm ci --omit=dev
-
 # Output standalone + assets statiques
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
+
+# Prisma schema + migrations
+COPY --from=builder /app/prisma ./prisma
+
+# Tous les node_modules de production (COPY depuis deps, pas de npm install ici)
+# → inclut prisma CLI + effect + fast-check + toutes les deps transitives
+COPY --from=deps /app/node_modules ./node_modules
 
 # Script de démarrage (migrations + serveur)
 COPY --chown=nextjs:nodejs scripts/docker-start.sh ./start.sh
