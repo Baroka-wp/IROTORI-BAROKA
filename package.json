@@ -9,7 +9,11 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "clean": "rm -rf dist .next",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "docker:build": "docker build -t irotori-baroka:local .",
+    "docker:run": "docker run --rm -p 3000:3000 --env-file .env.local irotori-baroka:local",
+    "docker:test": "npm run docker:build && npm run docker:run",
+    "docker:stop": "docker stop $(docker ps -q --filter name=irotori-baroka) 2>/dev/null || true"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

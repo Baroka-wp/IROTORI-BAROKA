@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 1 — Dépendances
+# Stage 1 — Build Next.js
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:20-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
@@ -9,14 +9,6 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 RUN npm ci
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Stage 2 — Build Next.js
-# ─────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
-RUN apk add --no-cache openssl
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -28,7 +20,7 @@ RUN npm run build
 RUN mkdir -p /app/public
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 3 — Runner (image finale, minimale)
+# Stage 2 — Runner (image finale)
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
 RUN apk add --no-cache openssl
@@ -41,19 +33,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs \
  && adduser  --system --uid 1001 nextjs
 
+# Installer les dépendances de production
+# (inclut prisma + toutes ses dépendances transitives : effect, fast-check, etc.)
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+RUN npm ci --omit=dev
+
 # Output standalone + assets statiques
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static     ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public           ./public
-
-# Prisma : schema + migrations + client natif pour le runtime
-COPY --from=builder /app/prisma                   ./prisma
-COPY --from=deps    /app/node_modules/.prisma      ./node_modules/.prisma
-COPY --from=deps    /app/node_modules/@prisma      ./node_modules/@prisma
-COPY --from=deps    /app/node_modules/prisma       ./node_modules/prisma
-COPY --from=deps    /app/node_modules/.bin/prisma  ./node_modules/.bin/prisma
-# Dépendances transitives de @prisma/config
-COPY --from=deps    /app/node_modules/effect       ./node_modules/effect
 
 # Script de démarrage (migrations + serveur)
 COPY --chown=nextjs:nodejs scripts/docker-start.sh ./start.sh
