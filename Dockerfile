@@ -52,6 +52,8 @@ COPY --from=deps    /app/node_modules/.prisma      ./node_modules/.prisma
 COPY --from=deps    /app/node_modules/@prisma      ./node_modules/@prisma
 COPY --from=deps    /app/node_modules/prisma       ./node_modules/prisma
 COPY --from=deps    /app/node_modules/.bin/prisma  ./node_modules/.bin/prisma
+# Dépendances transitives de @prisma/config
+COPY --from=deps    /app/node_modules/effect       ./node_modules/effect
 
 # Script de démarrage (migrations + serveur)
 COPY --chown=nextjs:nodejs scripts/docker-start.sh ./start.sh
