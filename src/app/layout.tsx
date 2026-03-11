@@ -92,7 +92,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
       </head>
-      <body className={`${inter.className} font-sans selection:bg-[#6B1A2A]/20 selection:text-[#6B1A2A] transition-colors duration-300 bg-[var(--bg-color)] text-[var(--text-color)]`}>
+      <body suppressHydrationWarning className={`${inter.className} font-sans selection:bg-[#6B1A2A]/20 selection:text-[#6B1A2A] transition-colors duration-300 bg-[var(--bg-color)] text-[var(--text-color)]`}>
         {children}
       </body>
     </html>
