@@ -113,7 +113,7 @@ export const HomePage: React.FC = () => {
                 Irotori Baroka
               </h2>
               <p className="text-xl uppercase tracking-widest opacity-60">
-                Ingénieur | Educateur | Entrepreneur
+                Ingénieur | Formateur | Entrepreneur
               </p>
               <p className="text-lg md:text-2xl text-white/90 font-light leading-relaxed">
                 J'aime créer des solutions technologiques et rendre les choses complexes plus simples et claires.
@@ -123,9 +123,9 @@ export const HomePage: React.FC = () => {
             <div className="pt-12 space-y-6 border-t border-white/20">
               <p className="text-sm uppercase tracking-widest opacity-60">Me suivre</p>
               <div className="flex gap-6">
-                <SocialLink name="Facebook" url="https://facebook.com" />
-                <SocialLink name="X.com" url="https://x.com" />
-                <SocialLink name="LinkedIn" url="https://linkedin.com" />
+                <SocialLink name="Facebook" url="https://www.facebook.com/baroka.irotori.5/" />
+                <SocialLink name="X.com" url="https://x.com/IrotoriB" />
+                <SocialLink name="LinkedIn" url="https://www.linkedin.com/in/baroka/" />
               </div>
             </div>
           </div>
