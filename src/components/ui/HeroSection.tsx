@@ -1,21 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
-
-/** Génère un srcSet Cloudinary responsive depuis une URL brute */
-function cloudinarySrcSet(url: string): string | undefined {
-  if (!url.includes('res.cloudinary.com')) return undefined;
-  return [640, 1024, 1400, 1920]
-    .map(w => `${url.replace('/upload/', `/upload/c_limit,w_${w},f_auto,q_auto/`)} ${w}w`)
-    .join(', ');
-}
-
-/** Insère les transformations f_auto,q_auto sur une URL Cloudinary */
-function cloudinaryOptimize(url: string): string {
-  if (!url.includes('res.cloudinary.com')) return url;
-  return url.replace('/upload/', '/upload/f_auto,q_auto/');
-}
 
 interface HeroSectionProps {
   imageSrc: string;
@@ -32,11 +19,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   children,
 }) => {
   const [loaded, setLoaded] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    if (imgRef.current?.complete) setLoaded(true);
-  }, []);
 
   return (
     <div className={`w-full ${heightClass} relative overflow-hidden`}>
@@ -46,19 +28,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         className={`absolute inset-0 hero-skeleton transition-opacity duration-700 ${loaded ? 'opacity-0' : 'opacity-100'}`}
       />
 
-      {/* Image principale */}
-      <img
-        ref={imgRef}
-        src={cloudinaryOptimize(imageSrc)}
-        srcSet={cloudinarySrcSet(imageSrc)}
-        sizes="100vw"
+      {/* Image principale — next/image génère WebP + srcSet + cache 1 an */}
+      <Image
+        src={imageSrc}
         alt={imageAlt}
-        loading="eager"
-        fetchPriority="high"
-        decoding="async"
+        fill
+        priority
+        sizes="100vw"
         onLoad={() => setLoaded(true)}
-        className={`w-full h-full object-cover grayscale brightness-[0.4] contrast-125 scale-105 transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        referrerPolicy="no-referrer"
+        className={`object-cover grayscale brightness-[0.4] contrast-125 scale-105 transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       />
 
       {/* Gradient de bas de page */}
