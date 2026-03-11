@@ -12,8 +12,8 @@ export const CTAButton: React.FC<CTAButtonProps> = ({ label, onClick, variant = 
   
   const variantClasses = {
     primary: "bg-[#6B1A2A] text-white hover:opacity-90 transition-opacity",
-    secondary: "bg-white text-[#6B1A2A] hover:gap-8",
-    outline: "border border-[#6B1A2A] text-[#6B1A2A] hover:bg-[#6B1A2A] hover:text-white",
+    secondary: "bg-white text-[var(--brand-text)] hover:gap-8",
+    outline: "border border-[#6B1A2A] text-[var(--brand-text)] hover:bg-[#6B1A2A] hover:text-white",
   };
 
   return (
@@ -46,7 +46,7 @@ interface SectionTitleProps {
 
 export const SectionTitle: React.FC<SectionTitleProps> = ({ children, variant = 'large' }) => {
   const variantClasses = {
-    large: "text-5xl md:text-6xl font-light text-[#6B1A2A] leading-[0.9] tracking-tighter",
+    large: "text-5xl md:text-6xl font-light text-[var(--brand-text)] leading-[0.9] tracking-tighter",
     medium: "text-3xl md:text-4xl font-light",
     small: "text-xl uppercase tracking-widest opacity-60",
   };

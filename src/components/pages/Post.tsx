@@ -58,7 +58,7 @@ function ShareButton({ title }: { title: string }) {
     <button
       onClick={handleShare}
       aria-label="Partager cet article"
-      className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors"
+      className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/60 hover:text-[var(--brand-text)] transition-colors"
     >
       {copied ? <Check size={15} /> : <Share2 size={15} />}
       {copied ? 'Lien copié !' : 'Partager'}
@@ -72,7 +72,7 @@ function BackButton({ href, label }: { href: string; label: string }) {
   return (
     <button
       onClick={() => router.push(href)}
-      className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors mb-12 group"
+      className="inline-flex items-center gap-2 text-sm text-[var(--text-color)]/60 hover:text-[var(--brand-text)] transition-colors mb-12 group"
     >
       <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
       {label}
@@ -103,11 +103,11 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
         <header className="mb-16">
           {/* Meta row: date · reading time · share */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <p className="text-sm text-[var(--text-color)]/40 font-light uppercase tracking-widest">
+            <p className="text-sm text-[var(--text-color)]/60 font-light uppercase tracking-widest">
               {formatDate(reflexion.createdAt)} · Réflexion
             </p>
             <div className="flex items-center gap-4">
-              <span className="inline-flex items-center gap-1.5 text-sm text-[var(--text-color)]/40">
+              <span className="inline-flex items-center gap-1.5 text-sm text-[var(--text-color)]/60">
                 <Clock size={14} />
                 {minutes} min de lecture
               </span>
@@ -115,14 +115,14 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
             </div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-light leading-tight mb-8 text-[#6B1A2A]">
+          <h1 className="text-5xl md:text-6xl font-light leading-tight mb-8 text-[var(--brand-text)]">
             {reflexion.title}
           </h1>
 
           {reflexion.tags && (
             <div className="flex gap-2 flex-wrap">
               {reflexion.tags.split(',').map(tag => (
-                <span key={tag} className="text-xs uppercase tracking-wider px-2.5 py-1 bg-[var(--card-bg)] text-[var(--text-color)]/50 rounded-sm border border-[var(--border-color)]">
+                <span key={tag} className="text-xs uppercase tracking-wider px-2.5 py-1 bg-[var(--card-bg)] text-[var(--text-color)]/60 rounded-sm border border-[var(--border-color)]">
                   {tag.trim()}
                 </span>
               ))}
@@ -177,12 +177,12 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
 
         <header className="mb-12">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <p className="text-sm text-[var(--text-color)]/40 font-light uppercase tracking-widest">
+            <p className="text-sm text-[var(--text-color)]/60 font-light uppercase tracking-widest">
               {formatDate(video.createdAt)} · Vidéo
             </p>
             <ShareButton title={video.title} />
           </div>
-          <h1 className="text-5xl md:text-6xl font-light leading-tight mb-6 text-[#6B1A2A]">
+          <h1 className="text-5xl md:text-6xl font-light leading-tight mb-6 text-[var(--brand-text)]">
             {video.title}
           </h1>
           {video.description && (
@@ -191,8 +191,8 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
             </div>
           )}
           {video.playlist && (
-            <p className="text-sm text-[#6B1A2A] mb-8">
-              <span className="uppercase tracking-widest text-xs opacity-60">Playlist</span>
+            <p className="text-sm text-[var(--brand-text)] mb-8">
+              <span className="uppercase tracking-widest text-xs opacity-80">Playlist</span>
               <br />
               {video.playlist}
             </p>
@@ -217,7 +217,7 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
 
         {video.resume && (
           <div className="pt-8 border-t border-[var(--border-color)]">
-            <h3 className="text-xl font-medium text-[#6B1A2A] mb-4">Résumé</h3>
+            <h3 className="text-xl font-medium text-[var(--brand-text)] mb-4">Résumé</h3>
             <div
               className="font-light leading-relaxed text-lg text-[var(--text-color)]/70"
               dangerouslySetInnerHTML={{ __html: video.resume }}
@@ -239,12 +239,12 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
 
         <header className="mb-12">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-            <p className="text-sm text-[var(--text-color)]/40 font-light uppercase tracking-widest">
+            <p className="text-sm text-[var(--text-color)]/60 font-light uppercase tracking-widest">
               {formatDate(ebook.createdAt)} · E-book
             </p>
             <ShareButton title={ebook.title} />
           </div>
-          <h1 className="text-5xl md:text-6xl font-light leading-tight mb-4 text-[#6B1A2A]">
+          <h1 className="text-5xl md:text-6xl font-light leading-tight mb-4 text-[var(--brand-text)]">
             {ebook.title}
           </h1>
           {ebook.subtitle && (
@@ -259,7 +259,7 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
         )}
 
         <div className="flex items-center justify-between mb-8 pb-8 border-b border-[var(--border-color)]">
-          <span className={`text-xl font-medium ${ebook.price === 0 ? 'text-green-500' : 'text-[#6B1A2A]'}`}>
+          <span className={`text-xl font-medium ${ebook.price === 0 ? 'text-green-500' : 'text-[var(--brand-text)]'}`}>
             {ebook.price === 0 ? 'Gratuit' : `${ebook.price} FCFA`}
           </span>
           {ebook.downloadUrl && (
@@ -277,7 +277,7 @@ export const PostDisplay: React.FC<PostDisplayProps> = ({ content }) => {
 
         {ebook.description && (
           <div className="prose max-w-none font-light leading-relaxed text-xl">
-            <h3 className="text-2xl font-medium text-[#6B1A2A] mb-4">Description</h3>
+            <h3 className="text-2xl font-medium text-[var(--brand-text)] mb-4">Description</h3>
             <div dangerouslySetInnerHTML={{ __html: ebook.description }} />
           </div>
         )}

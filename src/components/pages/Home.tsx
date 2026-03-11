@@ -33,7 +33,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="space-y-32 pb-32">
       <HeroSection
-        imageSrc="https://res.cloudinary.com/baroka/image/upload/v1772294086/ali-ahmadi-pWT8BptTET0-unsplash_plej4w.jpg"
+        imageSrc="/hero.jpg"
         imageAlt="Clarity and Focus"
         heightClass="h-[50vh] md:h-[70vh]"
       >
@@ -132,8 +132,12 @@ export const HomePage: React.FC = () => {
 
           <div className="relative w-full max-w-[450px] mx-auto md:ml-auto">
             <img
-              src="https://res.cloudinary.com/baroka/image/upload/v1772299484/PHOTO-2026-01-14-17-25-43-removebg-preview_kuprif.png"
+              src="https://res.cloudinary.com/baroka/image/upload/f_webp,q_auto,w_450/v1772299484/PHOTO-2026-01-14-17-25-43-removebg-preview_kuprif.png"
               alt="Irotori Baroka"
+              width={450}
+              height={600}
+              loading="lazy"
+              decoding="async"
               className="w-full h-auto drop-shadow-2xl"
             />
           </div>

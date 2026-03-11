@@ -108,7 +108,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                     </div>
                   )}
                   <div className="p-8">
-                    <h3 className="text-2xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-3">
+                    <h3 className="text-2xl font-light text-[var(--text-color)] group-hover:text-[var(--brand-text)] transition-colors mb-3">
                       {ebook.title}
                     </h3>
                     {ebook.subtitle && (
@@ -120,7 +120,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                       </p>
                     )}
                     <div className="flex items-center justify-between pt-6 border-t border-[var(--border-color)]">
-                      <span className={`text-lg font-medium ${ebook.price === 0 ? 'text-green-500' : 'text-[#6B1A2A]'}`}>
+                      <span className={`text-lg font-medium ${ebook.price === 0 ? 'text-green-500' : 'text-[var(--brand-text)]'}`}>
                         {ebook.price === 0 ? 'Gratuit' : `${ebook.price} FCFA`}
                       </span>
                       {ebook.downloadUrl && (
@@ -140,7 +140,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                 </article>
               ))
             ) : (
-              <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-20">Aucun livre disponible pour le moment.</p>
+              <p className="text-[var(--text-color)]/60 font-light italic col-span-full text-center py-20">Aucun livre disponible pour le moment.</p>
             )}
           </div>
         </div>
@@ -177,18 +177,18 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                     className="group p-10 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg hover:border-[#6B1A2A] hover:shadow-md transition-all text-left"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-2xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors">
+                      <h3 className="text-2xl font-light text-[var(--text-color)] group-hover:text-[var(--brand-text)] transition-colors">
                         {playlistName}
                       </h3>
-                      <ArrowRight size={24} className="text-[var(--text-color)]/40 group-hover:text-[#6B1A2A] transition-colors" />
+                      <ArrowRight size={24} className="text-[var(--text-color)]/60 group-hover:text-[var(--brand-text)] transition-colors" />
                     </div>
-                    <p className="text-sm text-[var(--text-color)]/40 mt-4">
+                    <p className="text-sm text-[var(--text-color)]/60 mt-4">
                       {getVideoCountForPlaylist(playlistName)} vidéo(s)
                     </p>
                   </motion.button>
                 ))
               ) : (
-                <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-20">
+                <p className="text-[var(--text-color)]/60 font-light italic col-span-full text-center py-20">
                   Aucune playlist disponible.
                 </p>
               )}
@@ -218,9 +218,9 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
 
         <div className="max-w-6xl mx-auto px-4 pb-32">
           {loading ? (
-            <p className="text-center py-8 text-[var(--text-color)]/40">Chargement...</p>
+            <p className="text-center py-8 text-[var(--text-color)]/60">Chargement...</p>
           ) : videoItems.length === 0 ? (
-            <p className="text-[var(--text-color)]/40 font-light italic text-center py-8">
+            <p className="text-[var(--text-color)]/60 font-light italic text-center py-8">
               Aucune vidéo dans cette playlist.
             </p>
           ) : (
@@ -249,7 +249,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                     </div>
                   )}
                   <div className="p-6 flex-grow">
-                    <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2 line-clamp-2 leading-snug">
+                    <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[var(--brand-text)] transition-colors mb-2 line-clamp-2 leading-snug">
                       {video.title}
                     </h3>
                     {video.description && (
@@ -291,7 +291,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
               onClick={() => setSelectedSubcategory(sub.id)}
               className={`px-5 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-200 ${selectedSubcategory === sub.id
                 ? 'bg-[#6B1A2A] text-white'
-                : 'bg-[var(--card-bg)] text-[var(--text-color)]/50 hover:text-[#6B1A2A] border border-[var(--border-color)]'
+                : 'bg-[var(--card-bg)] text-[var(--text-color)]/70 hover:text-[var(--brand-text)] border border-[var(--border-color)]'
                 }`}
             >
               {sub.name}
@@ -301,7 +301,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
 
         {/* Count */}
         {postsBySubcategory.length > 0 && (
-          <p className="text-xs uppercase tracking-widest text-[var(--text-color)]/30 mb-10">
+          <p className="text-xs uppercase tracking-widest text-[var(--text-color)]/60 mb-10">
             {postsBySubcategory.length} réflexion{postsBySubcategory.length > 1 ? 's' : ''}
           </p>
         )}
@@ -334,11 +334,11 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                 >
                   {/* Top meta */}
                   <div className="flex items-center gap-4 mb-4 flex-wrap">
-                    <span className="text-xs text-[var(--text-color)]/35 font-light uppercase tracking-wider">
+                    <span className="text-xs text-[var(--text-color)]/60 font-light uppercase tracking-wider">
                       {formatDate(reflexion.createdAt)}
                     </span>
                     <span className="text-[var(--text-color)]/20 text-xs">·</span>
-                    <span className="flex items-center gap-1 text-xs text-[var(--text-color)]/35">
+                    <span className="flex items-center gap-1 text-xs text-[var(--text-color)]/60">
                       <Clock size={11} />
                       {minutes} min
                     </span>
@@ -347,7 +347,7 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                         <span className="text-[var(--text-color)]/20 text-xs">·</span>
                         <div className="flex gap-1.5 flex-wrap">
                           {reflexion.tags.split(',').slice(0, 2).map(tag => (
-                            <span key={tag} className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[var(--card-bg)] text-[var(--text-color)]/40 rounded-sm border border-[var(--border-color)]">
+                            <span key={tag} className="text-[10px] uppercase tracking-wider px-2 py-0.5 bg-[var(--card-bg)] text-[var(--text-color)]/60 rounded-sm border border-[var(--border-color)]">
                               {tag.trim()}
                             </span>
                           ))}
@@ -357,26 +357,26 @@ export const ContentListPage: React.FC<ContentListPageProps> = ({ type, title, i
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-2xl md:text-3xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors duration-200 leading-snug mb-3">
+                  <h3 className="text-2xl md:text-3xl font-light text-[var(--text-color)] group-hover:text-[var(--brand-text)] transition-colors duration-200 leading-snug mb-3">
                     {reflexion.title}
                   </h3>
 
                   {/* Excerpt */}
                   {excerpt && (
-                    <p className="text-base text-[var(--text-color)]/50 font-light leading-relaxed mb-4 max-w-[560px]">
+                    <p className="text-base text-[var(--text-color)]/70 font-light leading-relaxed mb-4 max-w-[560px]">
                       {excerpt}
                     </p>
                   )}
 
                   {/* Read more */}
-                  <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-[#6B1A2A]/0 group-hover:text-[#6B1A2A]/70 transition-all duration-200">
+                  <span className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider text-[var(--brand-text)]/0 group-hover:text-[var(--brand-text)]/80 transition-all duration-200">
                     Lire <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                   </span>
                 </motion.article>
               );
             })
           ) : (
-            <p className="text-[var(--text-color)]/40 font-light italic py-12">Aucune réflexion dans cette catégorie.</p>
+            <p className="text-[var(--text-color)]/60 font-light italic py-12">Aucune réflexion dans cette catégorie.</p>
           )}
         </div>
       </div>
