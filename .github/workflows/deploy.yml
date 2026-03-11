@@ -124,6 +124,11 @@ jobs:
             # ── Connexion à ghcr.io ──────────────────────────────────────────
             echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin
 
+            # ── Purge des snapshots containerd corrompus (prévient les erreurs
+            #    Lchown/overlayfs lors du pull de grosses images comme Prisma) ──
+            docker image rm "$IMAGE" 2>/dev/null || true
+            docker system prune -f
+
             # ── Pull de la nouvelle image ────────────────────────────────────
             docker compose pull
 
