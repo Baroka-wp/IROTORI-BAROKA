@@ -33,7 +33,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="space-y-32 pb-32">
       <HeroSection
-        imageSrc="https://res.cloudinary.com/baroka/image/upload/v1772294086/ali-ahmadi-pWT8BptTET0-unsplash_plej4w.jpg"
+        imageSrc="/hero.jpg"
         imageAlt="Clarity and Focus"
         heightClass="h-[50vh] md:h-[70vh]"
       >

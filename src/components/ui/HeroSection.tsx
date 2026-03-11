@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 
 /** Génère un srcSet Cloudinary responsive depuis une URL brute */
@@ -32,6 +32,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   children,
 }) => {
   const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imgRef.current?.complete) setLoaded(true);
+  }, []);
 
   return (
     <div className={`w-full ${heightClass} relative overflow-hidden`}>
@@ -43,6 +48,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       {/* Image principale */}
       <img
+        ref={imgRef}
         src={cloudinaryOptimize(imageSrc)}
         srcSet={cloudinarySrcSet(imageSrc)}
         sizes="100vw"
