@@ -80,24 +80,35 @@
 .zen-bubble { z-index: 100; }
 
 /* ─── Hero skeleton shimmer ─────────────────────────────────────────────── */
+/* Utilise transform (GPU composité) au lieu de background-position (non composité) */
 .hero-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--card-bg);
+}
+
+.hero-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
-    var(--card-bg) 0%,
+    transparent 0%,
     rgba(107, 26, 42, 0.08) 50%,
-    var(--card-bg) 100%
+    transparent 100%
   );
-  background-size: 200% 100%;
+  transform: translateX(-100%);
   animation: shimmer 1.6s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-skeleton { animation: none; }
+  .hero-skeleton::after { animation: none; }
 }
 
 .prose h1, .prose h2, .prose h3 {
