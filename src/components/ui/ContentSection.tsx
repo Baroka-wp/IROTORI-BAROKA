@@ -9,10 +9,10 @@ interface FeatureCardProps {
 
 export const FeatureCard: React.FC<FeatureCardProps> = ({ number, title, description }) => (
   <div className="flex items-start gap-6 p-8 bg-[var(--bg-color)] border border-[var(--border-color)] group hover:border-[#6B1A2A]/30 transition-colors">
-    <span className="text-3xl font-light text-[#6B1A2A]/30 group-hover:text-[#6B1A2A] transition-colors">{number}</span>
+    <span className="text-3xl font-light text-[var(--brand-text)]/60 group-hover:text-[var(--brand-text)] transition-colors">{number}</span>
     <div>
       <h3 className="text-2xl font-medium text-[var(--text-color)] mb-2">{title}</h3>
-      <p className="text-lg text-[var(--text-color)]/60 font-light">{description}</p>
+      <p className="text-lg text-[var(--text-color)]/70 font-light">{description}</p>
     </div>
   </div>
 );
@@ -35,7 +35,7 @@ export const ContentSection: React.FC<ContentSectionProps> = ({
   <section className="py-32 border-y border-[var(--border-color)] bg-[var(--card-bg)]/30">
     <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
       <div className="space-y-10">
-        <h2 className="text-5xl md:text-6xl font-light text-[#6B1A2A] leading-[0.9] tracking-tighter">
+        <h2 className="text-5xl md:text-6xl font-light text-[var(--brand-text)] leading-[0.9] tracking-tighter">
           {title}
         </h2>
         <p className="text-2xl text-[var(--text-color)]/70 font-light leading-relaxed max-w-[500px]">

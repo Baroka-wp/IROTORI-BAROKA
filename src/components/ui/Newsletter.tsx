@@ -22,7 +22,7 @@ export const Newsletter: React.FC = () => {
 
   return (
     <section className="bg-[var(--card-bg)] border border-[var(--border-color)] p-10 my-20">
-      <h3 className="text-2xl font-medium mb-4 text-[#6B1A2A]">Newsletter</h3>
+      <h3 className="text-2xl font-medium mb-4 text-[var(--brand-text)]">Newsletter</h3>
       <p className="text-[var(--text-color)]/70 font-light mb-8 leading-relaxed text-lg">
         Recevez des idées essentielles pour renforcer votre clarté mentale et votre capacité d'action.
       </p>

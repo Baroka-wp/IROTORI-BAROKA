@@ -61,12 +61,12 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
                        project.status === 'in_progress' ? 'En cours' : 'Archivé'}
                     </span>
                     {project.technologies && (
-                      <span className="text-xs text-[var(--text-color)]/40">
+                      <span className="text-xs text-[var(--text-color)]/60">
                         {project.technologies.split(',')[0]}
                       </span>
                     )}
                   </div>
-                  <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[#6B1A2A] transition-colors mb-2">
+                  <h3 className="text-xl font-light text-[var(--text-color)] group-hover:text-[var(--brand-text)] transition-colors mb-2">
                     {project.title}
                   </h3>
                   {project.description && (
@@ -81,7 +81,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-[#6B1A2A] hover:underline"
+                        className="text-sm text-[var(--brand-text)] hover:underline"
                       >
                         Site web
                       </a>
@@ -92,7 +92,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-sm text-[#6B1A2A] hover:underline"
+                        className="text-sm text-[var(--brand-text)] hover:underline"
                       >
                         GitHub
                       </a>
@@ -102,7 +102,7 @@ export const ProjectsGrid: React.FC<ProjectsGridProps> = ({ projects }) => {
               </article>
             ))
           ) : (
-            <p className="text-[var(--text-color)]/40 font-light italic col-span-full text-center py-20">
+            <p className="text-[var(--text-color)]/60 font-light italic col-span-full text-center py-20">
               Aucun projet pour le moment.
             </p>
           )}

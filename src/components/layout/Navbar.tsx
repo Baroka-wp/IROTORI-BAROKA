@@ -44,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
       <div className="max-w-[680px] mx-auto px-4 h-16 flex items-center justify-between">
         <Link
           href="/"
-          className="text-[#6B1A2A] font-medium text-xl tracking-tight hover:opacity-80 transition-opacity"
+          className="text-[var(--brand-text)] font-medium text-xl tracking-tight hover:opacity-80 transition-opacity"
         >
           IROTORI BAROKA
         </Link>
@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
             <Link
               key={item.path}
               href={item.path}
-              className="text-sm font-light text-[var(--text-color)]/60 hover:text-[#6B1A2A] transition-colors"
+              className="text-sm font-light text-[var(--text-color)]/70 hover:text-[var(--brand-text)] transition-colors"
             >
               {item.name}
             </Link>
@@ -64,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
             type="button"
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
-            className="p-1.5 text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors"
+            className="p-1.5 text-[var(--text-color)]/60 hover:text-[var(--brand-text)] transition-colors"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
             <Link
               href="/admin"
               aria-label="Tableau de bord admin"
-              className="p-1.5 text-[var(--text-color)]/40 hover:text-[#6B1A2A] transition-colors"
+              className="p-1.5 text-[var(--text-color)]/60 hover:text-[var(--brand-text)] transition-colors"
             >
               <Settings size={18} />
             </Link>
@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
             type="button"
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
-            className="p-1.5 text-[var(--text-color)]/40"
+            className="p-1.5 text-[var(--text-color)]/60"
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                className="block w-full text-left text-lg font-light text-[#6B1A2A]"
+                className="block w-full text-left text-lg font-light text-[var(--brand-text)]"
               >
                 Admin Dashboard
               </Link>

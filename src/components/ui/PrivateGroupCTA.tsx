@@ -52,13 +52,13 @@ export const PrivateGroupCTA: React.FC<PrivateGroupCTAProps> = ({
           {/* Accent line */}
           <div className="w-8 h-px bg-[#6B1A2A] mb-6" />
 
-          <p className="text-xs uppercase tracking-widest text-[#6B1A2A]/60 mb-3 font-light">
+          <p className="text-xs uppercase tracking-widest text-[var(--brand-text)] mb-3 font-light">
             Groupe Privé
           </p>
           <h3 className="text-2xl md:text-3xl font-light text-[var(--text-color)] mb-4 leading-snug">
             {headline}
           </h3>
-          <p className="text-base text-[var(--text-color)]/60 font-light leading-relaxed mb-8 max-w-[480px]">
+          <p className="text-base text-[var(--text-color)]/70 font-light leading-relaxed mb-8 max-w-[480px]">
             {subtext}
           </p>
 
