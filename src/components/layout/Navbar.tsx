@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user }) => {
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--bg-color)]/80 backdrop-blur-md border-b border-[var(--border-color)]">
-      <div className="w-full px-6 h-16 flex items-center justify-between">
+      <div className="max-w-[680px] mx-auto px-4 w-full h-16 flex items-center justify-between">
         <Link
           href="/"
           className="text-[var(--brand-text)] font-medium text-xl tracking-tight hover:opacity-80 transition-opacity"
