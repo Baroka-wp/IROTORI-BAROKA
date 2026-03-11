@@ -12,8 +12,8 @@ export const Footer: React.FC = () => (
       </div>
       <div className="flex gap-6">
         <Link href="/" className="hover:text-[var(--brand-text)] transition-colors">RSS</Link>
-        <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand-text)] transition-colors">Twitter</a>
-        <a href="mailto:contact@example.com" className="hover:text-[var(--brand-text)] transition-colors">Email</a>
+        <a href="https://x.com/IrotoriB" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--brand-text)] transition-colors">Twitter</a>
+        <a href="mailto:mail@irotoribaroka.com" className="hover:text-[var(--brand-text)] transition-colors">Email</a>
       </div>
     </div>
   </footer>
